@@ -1,6 +1,6 @@
 (in-package #:cl-user)
 
-;;; An implementation of the doubly linked list data structure.
+;;;; An implementation of the doubly linked list data structure.
 
 (defpackage #:net.mfiano.lisp.algae.doubly-linked-list
   (:local-nicknames
