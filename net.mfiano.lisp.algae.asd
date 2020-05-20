@@ -15,3 +15,4 @@
    (:file "avl-tree")
    (:file "doubly-linked-list")
    (:file "quad-tree")))
+   (:file "tile-grid")
