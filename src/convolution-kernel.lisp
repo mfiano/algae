@@ -21,7 +21,7 @@
    #:detect
    #:filter
    #:find
-   #:layout
+   #:make-kernel
    #:map
    #:origin
    #:process
@@ -30,6 +30,7 @@
 (in-package #:net.mfiano.lisp.algae.convolution-kernel)
 
 (defstruct (kernel
+            (:constructor %%make-kernel)
             (:conc-name nil)
             (:copier nil))
   (grid (tg::%make-grid) :type tg:grid)
@@ -42,11 +43,11 @@
   (selector (constantly nil) :type function)
   (mapper (constantly nil) :type function))
 
-(u:fn-> make-kernel-factory (function function u:ub32 u:ub32 u:ub32 u:ub32)
-        function)
-(defun make-kernel-factory (selector mapper min-x max-x min-y max-y)
-  (lambda (grid x y)
-    (make-kernel :grid grid
+(u:fn-> %make-kernel (tg:grid function function u:ub32 u:ub32 u:ub32 u:ub32
+                              u:ub32 u:ub32)
+        kernel)
+(defun %make-kernel (grid selector mapper x y min-x max-x min-y max-y)
+  (%%make-kernel :grid grid
                  :origin-x x
                  :origin-y y
                  :min-x min-x
@@ -54,7 +55,37 @@
                  :min-y min-y
                  :max-y max-y
                  :selector selector
-                 :mapper mapper)))
+                 :mapper mapper))
+
+(u:fn-> make-kernel (tg:grid keyword
+                             &key
+                             (:x u:ub32)
+                             (:y u:ub32)
+                             (:min-x u:ub32)
+                             (:max-x u:ub32)
+                             (:min-y u:ub32)
+                             (:max-y u:ub32))
+        kernel)
+(defun make-kernel (grid shape
+                    &key (x 0) (y 0) (min-x 0) (max-x 1) (min-y 0) (max-y 1))
+  (declare (optimize speed))
+  (ecase shape
+    (:rect
+     (%make-kernel grid #'select/rect #'map/rect x y min-x max-x min-y max-y))
+    (:+
+     (%make-kernel grid #'select/+ #'map/+ x y min-x max-x min-y max-y))
+    (:x
+     (%make-kernel grid #'select/x #'map/x x y min-x max-x min-y max-y))
+    (:ellipse
+     (%make-kernel grid #'select/ellipse #'map/rect x y min-x max-x min-y
+                   max-y))
+    (:h
+     (%make-kernel grid #'select/h #'map/h x y min-x max-x min-y max-y))
+    (:v
+     (%make-kernel grid #'select/v #'map/v x y min-x max-x min-y max-y))
+    (:.
+     (%make-kernel grid #'select/rect #'map/rect x y 0 0 0 0))))
+
 
 (u:fn-> select/rect (kernel u:b32 u:b32) boolean)
 (defun select/rect (kernel x y)
@@ -194,32 +225,6 @@
   (declare (optimize speed))
   (values (funcall (mapper kernel) kernel func)))
 
-(u:fn-> layout (keyword &optional u:ub32 u:ub32 u:ub32 u:ub32) function)
-(defun layout (shape &optional (min-x 0) (max-x 1) (min-y 0) (max-y 1))
-  (declare (optimize speed))
-  (ecase shape
-    (:rect
-     (make-kernel-factory #'select/rect #'map/rect min-x max-x min-y max-y))
-    (:+
-     (make-kernel-factory #'select/+ #'map/+ min-x max-x min-y max-y))
-    (:x
-     (make-kernel-factory #'select/x #'map/x min-x max-x min-y max-y))
-    (:ellipse
-     (make-kernel-factory #'select/ellipse #'map/rect min-x max-x min-y max-y))
-    (:h
-     (make-kernel-factory #'select/h #'map/h min-x max-x min-y max-y))
-    (:v
-     (make-kernel-factory #'select/v #'map/v min-x max-x min-y max-y))
-    (:.
-     (make-kernel-factory #'select/rect #'map/rect 0 0 0 0))))
-
-(u:fn-> ensure-layout ((or keyword function)) function)
-(defun ensure-layout (layout)
-  (declare (optimize speed))
-  (etypecase layout
-    (keyword (layout layout))
-    (function layout)))
-
 (u:fn-> detect (kernel function) boolean)
 (defun detect (kernel func)
   (declare (optimize speed))
@@ -248,29 +253,29 @@
   (declare (optimize speed))
   (list-length (filter kernel func)))
 
-(u:fn-> convolve (tg:grid (or function keyword) function function) null)
-(defun convolve (grid layout func test)
+(u:fn-> convolve (kernel function function) null)
+(defun convolve (kernel func test)
   (declare (optimize speed))
-  (let ((layout (ensure-layout layout)))
+  (let ((grid (grid kernel)))
     (dotimes (y (tg:height grid))
       (dotimes (x (tg:width grid))
-        (let ((kernel (funcall layout grid x y)))
-          (when (funcall test kernel)
-            (funcall func kernel)))))))
+        (setf (origin-x kernel) x
+              (origin-y kernel) y)
+        (when (funcall test kernel)
+          (funcall func kernel))))))
 
-(u:fn-> find (tg:grid (or function keyword) function) list)
-(defun find (grid layout test)
+(u:fn-> find (kernel function) list)
+(defun find (kernel test)
   (declare (optimize speed))
-  (let ((layout (ensure-layout layout))
-        (items))
-    (convolve grid layout (lambda (x) (push x items)) test)
+  (let ((items))
+    (convolve kernel (lambda (x) (push x items)) test)
     items))
 
-(defun process (grid layout processor
+(defun process (kernel processor
                 &key items (test (constantly t)) (generator #'identity))
   (declare (optimize speed)
            (function processor test generator))
-  (let ((items (or items (find grid layout test))))
+  (let ((items (or items (find kernel test))))
     (u:while items
       (let ((kernel (funcall generator (pop items))))
         (when (funcall test kernel)
