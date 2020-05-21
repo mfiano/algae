@@ -163,18 +163,15 @@
   (setf (value target) (value source))
   target)
 
-(defmacro define-properties (&body body)
+(defun check-property-count (property-names)
   (let ((max (integer-length most-positive-fixnum)))
-    `(progn
-       ,@(unless (every
-                 (lambda (x)
-                   (let ((name (symbol-name x)))
-                     (char= #\+ (char name 0) (char name (1- (length name))))))
-                 body)
-           `((error "Property names must be enclosed in + characters since ~
-                     they are constants.")))
-       ,@(when (> (length body) max)
-           `((error "Only up to ~s properties are allowed." ,max)))
-       ,@(loop :for property :in body
-               :for i :from 0
-               :collect `(u:define-constant ,property ,(ash 1 i))))))
+    (when (> (length property-names) max)
+      `((error "Only up to ~s properties are allowed." ,max)))))
+
+(defmacro define-properties (&body body)
+  `(progn
+     ,@(check-property-count body)
+     ,@(loop :for name :in body
+             :for property = (u:symbolicate '#:+ name '#:+)
+             :for i :from 0
+             :collect `(u:define-constant ,property ,(ash 1 i)))))
