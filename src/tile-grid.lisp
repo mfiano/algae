@@ -90,6 +90,13 @@
     (setf (value cell) 0))
   grid)
 
+(u:fn-> copy-grid (grid grid) grid)
+(defun copy-grid (source target)
+  (setf (width target) (width source)
+        (height target) (height source)
+        (cells target) (cells source))
+  target)
+
 (defun clear-properties (cell)
   (setf (value cell) 0))
 
