@@ -202,10 +202,10 @@
      (make-kernel-factory #'select/rect #'map/rect min-x max-x min-y max-y))
     (:+
      (make-kernel-factory #'select/+ #'map/+ min-x max-x min-y max-y))
-    (:ellipse
-     (make-kernel-factory #'select/ellipse #'map/rect min-x max-x min-y max-y))
     (:x
      (make-kernel-factory #'select/x #'map/x min-x max-x min-y max-y))
+    (:ellipse
+     (make-kernel-factory #'select/ellipse #'map/rect min-x max-x min-y max-y))
     (:h
      (make-kernel-factory #'select/h #'map/h min-x max-x min-y max-y))
     (:v
