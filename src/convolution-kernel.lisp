@@ -25,6 +25,7 @@
    #:map
    #:origin
    #:process
+   #:reshape
    #:select))
 
 (in-package #:net.mfiano.lisp.algae.convolution-kernel)
@@ -86,6 +87,17 @@
     (:.
      (%make-kernel grid #'select/rect #'map/rect x y 0 0 0 0))))
 
+(u:fn-> reshape (kernel keyword) kernel)
+(defun reshape (kernel shape)
+  (declare (optimize speed))
+  (make-kernel (grid kernel)
+               shape
+               :x (origin-x kernel)
+               :y (origin-y kernel)
+               :min-x (min-x kernel)
+               :max-x (max-x kernel)
+               :min-y (min-y kernel)
+               :max-y (max-y kernel)))
 
 (u:fn-> select/rect (kernel u:b32 u:b32) boolean)
 (defun select/rect (kernel x y)
