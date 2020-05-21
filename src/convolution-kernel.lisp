@@ -56,7 +56,7 @@
                  :selector selector
                  :mapper mapper)))
 
-(u:fn-> select/rect (kernel u:ub16 u:ub16) boolean)
+(u:fn-> select/rect (kernel u:b32 u:b32) boolean)
 (defun select/rect (kernel x y)
   (declare (optimize speed))
   (let ((min-x (min-x kernel))
@@ -72,7 +72,7 @@
                    (< x min-x)
                    (< y min-y))))))
 
-(u:fn-> select/+ (kernel u:ub16 u:ub16) boolean)
+(u:fn-> select/+ (kernel u:b32 u:b32) boolean)
 (defun select/+ (kernel x y)
   (declare (optimize speed))
   (or (and (zerop y)
@@ -80,7 +80,7 @@
       (and (zerop x)
            (<= (min-y kernel) (abs y) (max-y kernel)))))
 
-(u:fn-> select/ellipse (kernel u:ub16 u:ub16) boolean)
+(u:fn-> select/ellipse (kernel u:b32 u:b32) boolean)
 (defun select/ellipse (kernel x y)
   (declare (optimize speed))
   (let ((max-x (max-x kernel))
@@ -89,7 +89,7 @@
            (/ (expt y 2) (expt (/ max-y 2) 2f0)))
         1f0)))
 
-(u:fn-> select/x (kernel u:ub16 u:ub16) boolean)
+(u:fn-> select/x (kernel u:b32 u:b32) boolean)
 (defun select/x (kernel x y)
   (declare (optimize speed))
   (let ((max (max (max-x kernel)
@@ -98,19 +98,19 @@
          (<= (abs y) max)
          (= (abs x) (abs y)))))
 
-(u:fn-> select/h (kernel u:ub16 u:ub16) boolean)
+(u:fn-> select/h (kernel u:b32 u:b32) boolean)
 (defun select/h (kernel x y)
   (declare (optimize speed))
   (and (zerop y)
        (<= (abs x) (max-x kernel))))
 
-(u:fn-> select/v (kernel u:ub16 u:ub16) boolean)
+(u:fn-> select/v (kernel u:b32 u:b32) boolean)
 (defun select/v (kernel x y)
   (declare (optimize speed))
   (and (zerop x)
        (<= (abs y) (max-y kernel))))
 
-(u:fn-> select (kernel u:b16 u:b16) (or tg:cell null))
+(u:fn-> select (kernel u:b32 u:b32) (or tg:cell null))
 (defun select (kernel x y)
   (declare (optimize speed))
   (when (funcall (selector kernel) kernel x y)
