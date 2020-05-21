@@ -220,16 +220,16 @@
     (keyword (layout layout))
     (function layout)))
 
-(u:fn-> detect (kernel function) (or tg:cell null))
+(u:fn-> detect (kernel function) boolean)
 (defun detect (kernel func)
   (declare (optimize speed))
   (block nil
     (map
      kernel
      (lambda (x)
-       (u:when-let ((value (funcall func x)))
+       (when (funcall func x)
          (locally (declare (optimize (safety 0)))
-           (return value)))))
+           (return t)))))
     nil))
 
 (u:fn-> filter (kernel function) list)
