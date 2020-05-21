@@ -17,6 +17,7 @@
    #:cell->kernel
    #:convolve
    #:count
+   #:define-properties
    #:detect
    #:filter
    #:find
@@ -30,7 +31,6 @@
 
 (defstruct (kernel
             (:conc-name nil)
-            (:predicate nil)
             (:copier nil))
   (grid (tg::%make-grid) :type tg:grid)
   (origin-x 0 :type u:ub16)
@@ -286,3 +286,35 @@
 (defun cell->kernel (grid cell layout)
   (declare (optimize speed))
   (values (funcall layout grid (tg:x cell) (tg:y cell))))
+
+(defun generate-property-functions (name options)
+  (u:with-gensyms (object cell)
+    (destructuring-bind (&key remove) options
+      (let ((constant-name (u:symbolicate '#:+ name '#:+))
+            (predicate-name (u:symbolicate name '#:-p))
+            (adder-name (u:symbolicate '#:add- name))
+            (remover-name (u:symbolicate '#:remove- name)))
+        `((defun ,predicate-name (,object)
+            (let ((,cell (if (kernel-p ,object) (origin ,object) ,object)))
+              (tg:cell-contains-p ,cell ,constant-name)))
+          (export ',predicate-name)
+          (defun ,adder-name (,object)
+            (let ((,cell (if (kernel-p ,object) (origin ,object) ,object)))
+              ,@(when remove
+                  `((tg:remove-properties
+                     ,cell
+                     ,@(mapcar (lambda (x) (u:symbolicate '#:+ x '#:+))
+                        remove))))
+              (tg:add-properties ,cell ,constant-name)))
+          (export ',adder-name)
+          (defun ,remover-name (,object)
+            (let ((,cell (if (kernel-p ,object) (origin ,object) ,object)))
+              (tg:remove-properties ,cell ,constant-name)))
+          (export ',remover-name))))))
+
+(defmacro define-properties (&body body)
+  (let ((properties (mapcar #'u:ensure-list body)))
+    `(progn
+       (tg:define-properties ,@(mapcar #'car properties))
+       ,@(loop :for (name . options) :in properties
+               :append (generate-property-functions name options)))))
