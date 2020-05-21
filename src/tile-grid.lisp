@@ -54,20 +54,17 @@
   (cells (make-array 0 :element-type 'cell)
    :type (simple-array cell (*))))
 
-(defmacro do-cells (grid cell &body body)
-  (u:with-gensyms (x y w h)
-    (destructuring-bind (grid &optional (w w) (h h) (x1 0) (y1 0)
-                                (x2 `(width ,grid)) (y2 `(height ,grid)))
-        (u:ensure-list grid)
-      (destructuring-bind (cell &optional (x x) (y y)) (u:ensure-list cell)
-        `(progn
-           (let ((,w (width ,grid))
-                 (,h (height ,grid)))
-             (declare (ignorable ,w ,h))
-             (loop :for ,y :from ,y1 :below ,y2
-                   :do (loop :for ,x :from ,x1 :below ,x2
-                             :for ,cell = (get-cell ,grid ,x ,y)
-                             :do (progn ,@body)))))))))
+(defmacro do-cells ((&key (w 'w) (h 'h) (x1 0) (y1 0) (x2 w) (y2 h)) grid cell
+                    &body body)
+  (u:with-gensyms (grid-sym x y)
+    (destructuring-bind (cell &optional (x x) (y y)) (u:ensure-list cell)
+      `(loop :with ,grid-sym = ,grid
+             :with ,w = (width ,grid-sym)
+             :with ,h = (height ,grid-sym)
+             :for ,y :from ,y1 :below ,y2
+             :do (loop :for ,x :from ,x1 :below ,x2
+                       :for ,cell = (get-cell ,grid-sym ,x ,y)
+                       :do (progn ,@body))))))
 
 (u:fn-> make-grid (u:ub16 u:ub16) grid)
 (defun make-grid (width height)
@@ -89,7 +86,7 @@
 (u:fn-> reset-grid (grid) grid)
 (defun reset-grid (grid)
   (declare (optimize speed))
-  (do-cells grid cell
+  (do-cells () grid cell
     (setf (value cell) 0))
   grid)
 
