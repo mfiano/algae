@@ -18,6 +18,7 @@
    #:clear-properties
    #:copy-grid
    #:copy-properties
+   #:define-properties
    #:do-cells
    #:get-cell
    #:grid
@@ -153,3 +154,19 @@
   (declare (optimize speed))
   (setf (value target) (value source))
   target)
+
+(defmacro define-properties (&body body)
+  (let ((max (integer-length most-positive-fixnum)))
+    `(progn
+       ,@(unless (every
+                 (lambda (x)
+                   (let ((name (symbol-name x)))
+                     (char= #\+ (char name 0) (char name (1- (length name))))))
+                 body)
+           `((error "Property names must be enclosed in + characters since ~
+                     they are constants.")))
+       ,@(when (> (length body) max)
+           `((error "Only up to ~s properties are allowed." ,max)))
+       ,@(loop :for property :in body
+               :for i :from 0
+               :collect `(u:define-constant ,property ,(ash 1 i))))))
