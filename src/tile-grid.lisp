@@ -93,6 +93,14 @@
 (defun clear-properties (cell)
   (setf (value cell) 0))
 
+(defun %constant-integer-p (x)
+  (and (constantp x)
+       (typecase x
+         (symbol
+          (let ((value (symbol-value x)))
+            (when (integerp value) value)))
+         (integer x))))
+
 (u:fn-> add-properties (cell &rest fixnum) cell)
 (defun add-properties (cell &rest properties)
   (declare (optimize speed))
@@ -103,12 +111,13 @@
 
 (define-compiler-macro add-properties (&whole whole cell &rest properties)
   (u:with-gensyms (cell-sym)
-    (if (every #'constantp properties)
-        `(let ((,cell-sym ,cell))
-           (setf (value ,cell-sym) (logior (value ,cell-sym)
-                                           ,(apply #'logior properties)))
-           ,cell-sym)
-        whole)))
+    (let ((properties (mapcar #'%constant-integer-p properties)))
+      (if (notany #'null properties)
+          `(let ((,cell-sym ,cell))
+             (setf (value ,cell-sym)
+                   (logior (value ,cell-sym) ,(apply #'logior properties)))
+             ,cell-sym)
+          whole))))
 
 (u:fn-> remove-properties (cell &rest fixnum) cell)
 (defun remove-properties (cell &rest properties)
@@ -120,13 +129,14 @@
 
 (define-compiler-macro remove-properties (&whole whole cell &rest properties)
   (u:with-gensyms (cell-sym)
-    (if (every #'constantp properties)
-        `(let ((,cell-sym ,cell))
-           (setf (value ,cell-sym)
-                 (logand (value ,cell-sym)
-                         ,(lognot (apply #'logior properties))))
-           ,cell-sym)
-        whole)))
+    (let ((properties (mapcar #'%constant-integer-p properties)))
+      (if (notany #'null properties)
+          `(let ((,cell-sym ,cell))
+             (setf (value ,cell-sym)
+                   (logand (value ,cell-sym)
+                           ,(lognot (apply #'logior properties))))
+             ,cell-sym)
+          whole))))
 
 (u:fn-> cell-contains-p (cell &rest fixnum) boolean)
 (defun cell-contains-p (cell &rest properties)
@@ -136,10 +146,11 @@
     (= mask (logand (value cell) mask))))
 
 (define-compiler-macro cell-contains-p (&whole whole cell &rest properties)
-  (if (every #'constantp properties)
-      (let ((mask (apply #'logior properties)))
-        `(= ,mask (logand (value ,cell) ,mask)))
-      whole))
+  (let ((properties (mapcar #'%constant-integer-p properties)))
+    (if (notany #'null properties)
+        (let ((mask (apply #'logior properties)))
+          `(= ,mask (logand (value ,cell) ,mask)))
+        whole)))
 
 (u:fn-> cell-empty-p (cell) boolean)
 (defun cell-empty-p (cell)
