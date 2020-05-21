@@ -20,6 +20,7 @@
    #:define-properties
    #:detect
    #:filter
+   #:flood-fill
    #:find
    #:make-kernel
    #:map
@@ -305,8 +306,23 @@
   (setf (origin-x kernel) (tg:x cell)
         (origin-y kernel) (tg:y cell))
   kernel)
+
+(u:fn-> flood-fill (kernel tg:cell function) hash-table)
+(defun flood-fill (kernel cell test)
   (declare (optimize speed))
-  (values (funcall layout grid (tg:x cell) (tg:y cell))))
+  (let ((cells (u:dict #'eq))
+        (visited nil))
+    (flet ((%test-cell (cell)
+             (when (and (not (u:href cells cell))
+                        (funcall test cell))
+               (map (align kernel cell) (lambda (x) (push x visited)))
+               (setf (u:href cells cell) cell)
+               nil)))
+      (%test-cell cell)
+      (loop :for x = (pop visited)
+            :while x
+            :do (%test-cell x))
+      cells)))
 
 (defun generate-property-functions (name options)
   (u:with-gensyms (object cell)
