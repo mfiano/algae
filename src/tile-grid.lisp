@@ -76,9 +76,9 @@
         (setf (aref cells (+ (* y width) x)) (make-cell x y))))
     grid))
 
-(u:fn-> get-cell (grid u:ub16 u:ub16) (or cell null))
+(u:fn-> get-cell (grid fixnum fixnum) (or cell null))
 (defun get-cell (grid x y)
-  (declare (optimize speed (safety 0)))
+  (declare (optimize speed))
   (when (and (<= 0 x (1- (width grid)))
              (<= 0 y (1- (height grid))))
     (aref (cells grid) (+ (* y (width grid)) x))))
