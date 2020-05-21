@@ -14,7 +14,7 @@
    #:find
    #:map)
   (:export
-   #:cell->kernel
+   #:align
    #:convolve
    #:count
    #:define-properties
@@ -282,8 +282,12 @@
   (declare (optimize speed))
   (select kernel 0 0))
 
-(u:fn-> cell->kernel (tg:grid tg:cell function) kernel)
-(defun cell->kernel (grid cell layout)
+(u:fn-> align (kernel tg:cell) kernel)
+(defun align (kernel cell)
+  (declare (optimize speed))
+  (setf (origin-x kernel) (tg:x cell)
+        (origin-y kernel) (tg:y cell))
+  kernel)
   (declare (optimize speed))
   (values (funcall layout grid (tg:x cell) (tg:y cell))))
 
