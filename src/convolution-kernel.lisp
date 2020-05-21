@@ -248,7 +248,7 @@
   (declare (optimize speed))
   (list-length (filter kernel func)))
 
-(u:fn-> convolve (tg:grid function function function) null)
+(u:fn-> convolve (tg:grid (or function keyword) function function) null)
 (defun convolve (grid layout func test)
   (declare (optimize speed))
   (let ((layout (ensure-layout layout)))
@@ -258,7 +258,7 @@
           (when (funcall test kernel)
             (funcall func kernel)))))))
 
-(u:fn-> find (tg:grid function function) list)
+(u:fn-> find (tg:grid (or function keyword) function) list)
 (defun find (grid layout test)
   (declare (optimize speed))
   (let ((layout (ensure-layout layout))
