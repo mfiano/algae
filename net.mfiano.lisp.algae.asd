@@ -6,7 +6,10 @@
   :source-control (:git "https://github.com/mfiano/algae")
   :bug-tracker "https://github.com/mfiano/algae/issues"
   :encoding :utf-8
-  :depends-on (#:net.mfiano.lisp.golden-utils
+  :depends-on (#:cl-pcg
+               #:ironclad
+               #:global-vars
+               #:net.mfiano.lisp.golden-utils
                #:net.mfiano.lisp.origin)
   :pathname "src"
   :serial t
@@ -26,4 +29,7 @@
     ((:file "tile-grid")))
    (:module "convolution-kernel"
     :components
-    ((:file "convolution-kernel")))))
+    ((:file "convolution-kernel")))
+   (:module "rng-pool"
+    :components
+    ((:file "rng-pool")))))
