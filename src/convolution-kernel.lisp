@@ -222,20 +222,17 @@
 (u:fn-> map/x (kernel function) list)
 (defun map/x (kernel func)
   (declare (optimize speed))
-  (let ((results)
-        (max (max (max-x kernel)
-                  (max-y kernel))))
-    (loop :for x :from (- max) :to max
-          :for cell = (%select kernel x x)
-          :when cell
-            :do (u:when-let ((value (funcall func cell)))
-                  (push value results)))
-    (loop :for x :from (- max) :to max
-          :for cell = (%select kernel (- x) x)
-          :when cell
-            :do (u:when-let ((value (funcall func cell)))
-                  (push value results)))
-    results))
+  (loop :with max = (max (max-x kernel)
+                         (max-y kernel))
+        :for x :from (- max) :to max
+        :for cell1 = (%select kernel x x)
+        :for cell2 = (%select kernel (- x) x)
+        :when (and cell1 (funcall func cell1))
+          :collect :it
+        :when (and cell2
+                   (not (equalp cell1 cell2))
+                   (funcall func cell2))
+          :collect :it))
 
 (u:fn-> map/h (kernel function) list)
 (defun map/h (kernel func)
