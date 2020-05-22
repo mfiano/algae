@@ -188,4 +188,5 @@
      ,@(loop :for name :in body
              :for property = (u:symbolicate '#:+ name '#:+)
              :for i :from 0
-             :collect `(u:define-constant ,property ,(ash 1 i)))))
+             :append `((u:define-constant ,property ,(ash 1 i))
+                       (export ',property)))))
