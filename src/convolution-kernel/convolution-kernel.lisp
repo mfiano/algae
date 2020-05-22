@@ -248,8 +248,8 @@
   (declare (optimize speed))
   (loop :with max = (max-y kernel)
         :for y :from (- max) :to max
-        :when (and cell (funcall func cell))
         :for cell = (select kernel 0 y)
+        :when (and cell (funcall func cell))
           :collect :it))
 
 (u:fn-> map (kernel function) list)

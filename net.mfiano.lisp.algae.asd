@@ -12,8 +12,18 @@
   :serial t
   :components
   ((:file "package")
-   (:file "doubly-linked-list")
-   (:file "avl-tree")
-   (:file "quad-tree")
-   (:file "tile-grid")
-   (:file "convolution-kernel")))
+   (:module "doubly-linked-list"
+    :components
+    ((:file "doubly-linked-list")))
+   (:module "avl-tree"
+    :components
+    ((:file "avl-tree")))
+   (:module "quad-tree"
+    :components
+    ((:file "quad-tree")))
+   (:module "tile-grid"
+    :components
+    ((:file "tile-grid")))
+   (:module "convolution-kernel"
+    :components
+    ((:file "convolution-kernel")))))
