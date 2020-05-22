@@ -19,7 +19,6 @@
    #:count
    #:define-properties
    #:detect
-   #:filter
    #:flood-fill
    #:find
    #:make-kernel
@@ -48,6 +47,7 @@
 (u:fn-> %make-kernel (tg:grid function function u:ub32 u:ub32 u:ub32 u:ub32
                               u:ub32 u:ub32)
         kernel)
+(declaim (inline %make-kernel))
 (defun %make-kernel (grid selector mapper x y min-x max-x min-y max-y)
   (%%make-kernel :grid grid
                  :origin-x x
@@ -79,7 +79,7 @@
     (:x
      (%make-kernel grid #'select/x #'map/x x y min-x max-x min-y max-y))
     (:ellipse
-     (%make-kernel grid #'select/ellipse #'map/rect x y min-x max-x min-y
+     (%make-kernel grid #'select/ellipse #'map/default x y min-x max-x min-y
                    max-y))
     (:h
      (%make-kernel grid #'select/h #'map/h x y min-x max-x min-y max-y))
@@ -99,6 +99,14 @@
                :max-x (max-x kernel)
                :min-y (min-y kernel)
                :max-y (max-y kernel)))
+
+(u:fn-> %select (kernel u:b32 u:b32) (or tg:cell null))
+(declaim (inline %select))
+(defun %select (kernel x y)
+  (declare (optimize speed))
+  (let ((x (+ (origin-x kernel) x))
+        (y (+ (origin-y kernel) y)))
+    (tg:get-cell (grid kernel) x y)))
 
 (u:fn-> select/rect (kernel u:b32 u:b32) boolean)
 (defun select/rect (kernel x y)
@@ -158,22 +166,35 @@
 (defun select (kernel x y)
   (declare (optimize speed))
   (when (funcall (selector kernel) kernel x y)
-    (let ((x (truncate (+ (origin-x kernel) x)))
-          (y (truncate (+ (origin-y kernel) y))))
-      (tg:get-cell (grid kernel) x y))))
+    (%select kernel x y)))
 
-(u:fn-> map/rect (kernel function) list)
-(defun map/rect (kernel func)
+(u:fn-> map/default (kernel function) list)
+(defun map/default (kernel func)
   (declare (optimize speed))
-  (loop :with result = nil
+  (loop :with results = nil
         :with max-x = (max-x kernel)
         :with max-y = (max-y kernel)
         :for y :from max-y :downto (- max-y)
         :do (loop :for x :from (- max-x) :to max-x
                   :for cell = (select kernel x y)
                   :when cell
-                    :do (push (funcall func cell) result))
-        :finally (return result)))
+                    :do (u:when-let ((value (funcall func cell)))
+                          (push value results)))
+        :finally (return results)))
+
+(u:fn-> map/rect (kernel function) list)
+(defun map/rect (kernel func)
+  (declare (optimize speed))
+  (loop :with results = nil
+        :with max-x = (max-x kernel)
+        :with max-y = (max-y kernel)
+        :for y :from max-y :downto (- max-y)
+        :do (loop :for x :from (- max-x) :to max-x
+                  :for cell = (%select kernel x y)
+                  :when cell
+                    :do (u:when-let ((value (funcall func cell)))
+                          (push value results)))
+        :finally (return results)))
 
 (u:fn-> map/+ (kernel function) list)
 (defun map/+ (kernel func)
@@ -182,17 +203,20 @@
         (max-x (max-x kernel))
         (max-y (max-y kernel)))
     (loop :for y :from (- max-y) :to max-y
-          :for cell = (select kernel 0 y)
+          :for cell = (%select kernel 0 y)
           :when cell
-            :do (push (funcall func cell) results))
+            :do (u:when-let ((value (funcall func cell)))
+                  (push value results)))
     (loop :for x :from (- max-x) :below 0
-          :for cell = (select kernel x 0)
+          :for cell = (%select kernel x 0)
           :when cell
-            :do (push (funcall func cell) results))
+            :do (u:when-let ((value (funcall func cell)))
+                  (push value results)))
     (loop :for x :from 1 :to max-x
-          :for cell = (select kernel x 0)
+          :for cell = (%select kernel x 0)
           :when cell
-            :do (push (funcall func cell) results))
+            :do (u:when-let ((value (funcall func cell)))
+                  (push value results)))
     results))
 
 (u:fn-> map/x (kernel function) list)
@@ -202,36 +226,34 @@
         (max (max (max-x kernel)
                   (max-y kernel))))
     (loop :for x :from (- max) :to max
-          :for cell = (select kernel x x)
+          :for cell = (%select kernel x x)
           :when cell
-            :do (push (funcall func cell) results))
+            :do (u:when-let ((value (funcall func cell)))
+                  (push value results)))
     (loop :for x :from (- max) :to max
-          :for cell = (select kernel (- x) x)
+          :for cell = (%select kernel (- x) x)
           :when cell
-            :do (push (funcall func cell) results))
+            :do (u:when-let ((value (funcall func cell)))
+                  (push value results)))
     results))
 
 (u:fn-> map/h (kernel function) list)
 (defun map/h (kernel func)
   (declare (optimize speed))
-  (let ((results)
-        (max (max-x kernel)))
-    (loop :for x :from (- max) :to max
-          :for cell = (select kernel x 0)
-          :when cell
-            :do (push (funcall func cell) results))
-    results))
+  (loop :with max = (max-x kernel)
+        :for x :from (- max) :to max
+        :for cell = (%select kernel x 0)
+        :when (and cell (funcall func cell))
+          :collect :it))
 
 (u:fn-> map/v (kernel function) list)
 (defun map/v (kernel func)
   (declare (optimize speed))
-  (let ((results)
-        (max (max-y kernel)))
-    (loop :for y :from (- max) :to max
-          :for cell = (select kernel 0 y)
-          :when cell
-            :do (push (funcall func cell) results))
-    results))
+  (loop :with max = (max-y kernel)
+        :for y :from (- max) :to max
+        :for cell = (%select kernel 0 y)
+        :when (and cell (funcall func cell))
+          :collect :it))
 
 (u:fn-> map (kernel function) list)
 (defun map (kernel func)
@@ -250,21 +272,10 @@
            (return t)))))
     nil))
 
-(u:fn-> filter (kernel function) list)
-(defun filter (kernel func)
-  (declare (optimize speed))
-  (remove
-   nil
-   (map
-    kernel
-    (lambda (x)
-      (when (funcall func x)
-        x)))))
-
 (u:fn-> count (kernel function) fixnum)
 (defun count (kernel func)
   (declare (optimize speed))
-  (list-length (filter kernel func)))
+  (list-length (map kernel func)))
 
 (u:fn-> convolve (kernel function function) null)
 (defun convolve (kernel func test)
@@ -296,9 +307,10 @@
             (push new items)))))))
 
 (u:fn-> origin (kernel) (or tg:cell null))
+(declaim (inline origin))
 (defun origin (kernel)
   (declare (optimize speed))
-  (select kernel 0 0))
+  (%select kernel 0 0))
 
 (u:fn-> align (kernel tg:cell) kernel)
 (defun align (kernel cell)
@@ -307,19 +319,27 @@
         (origin-y kernel) (tg:y cell))
   kernel)
 
-(u:fn-> flood-fill (kernel tg:cell function) hash-table)
-(defun flood-fill (kernel cell test)
-  (declare (optimize speed))
+(u:fn-> flood-fill (kernel tg:cell function (simple-array bit (* *)))
+        hash-table)
+(defun flood-fill (kernel cell test visited)
+  (declare (optimize speed)
+           (function test))
   (let ((cells (u:dict #'eq))
-        (visited nil))
+        (work-list nil))
     (flet ((%test-cell (cell)
-             (when (and (not (u:href cells cell))
-                        (funcall test cell))
-               (map (align kernel cell) (lambda (x) (push x visited)))
+             (when (funcall test cell)
+               (setf (aref visited (tg:x cell) (tg:y cell)) 1)
+               (map (align kernel cell)
+                    (lambda (neighbor)
+                      (let ((x (tg:x neighbor))
+                            (y (tg:y neighbor)))
+                        (when (zerop (aref visited x y))
+                          (setf (aref visited x y) 1)
+                          (push neighbor work-list)))))
                (setf (u:href cells cell) cell)
                nil)))
       (%test-cell cell)
-      (loop :for x = (pop visited)
+      (loop :for x = (pop work-list)
             :while x
             :do (%test-cell x))
       cells)))
