@@ -332,11 +332,15 @@
             (adder-name (u:symbolicate '#:add- name))
             (remover-name (u:symbolicate '#:remove- name)))
         `((defun ,predicate-name (,object)
-            (let ((,cell (if (kernel-p ,object) (origin ,object) ,object)))
+            (u:when-let ((,cell (if (kernel-p ,object)
+                                    (origin ,object)
+                                    ,object)))
               (tg:cell-contains-p ,cell ,constant-name)))
           (export ',predicate-name)
           (defun ,adder-name (,object)
-            (let ((,cell (if (kernel-p ,object) (origin ,object) ,object)))
+            (u:when-let ((,cell (if (kernel-p ,object)
+                                    (origin ,object)
+                                    ,object)))
               ,@(when remove
                   `((tg:remove-properties
                      ,cell
@@ -345,7 +349,9 @@
               (tg:add-properties ,cell ,constant-name)))
           (export ',adder-name)
           (defun ,remover-name (,object)
-            (let ((,cell (if (kernel-p ,object) (origin ,object) ,object)))
+            (u:when-let ((,cell (if (kernel-p ,object)
+                                    (origin ,object)
+                                    ,object)))
               (tg:remove-properties ,cell ,constant-name)))
           (export ',remover-name))))))
 
