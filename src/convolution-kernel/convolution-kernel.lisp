@@ -26,320 +26,149 @@
    #:origin
    #:process
    #:reshape
-   #:select))
+   #:resolve))
 
 (in-package #:net.mfiano.lisp.algae.convolution-kernel)
 
+(defvar *shapes* (u:dict #'eq))
+
 (defstruct (kernel
-            (:constructor %%make-kernel)
+            (:constructor %make-kernel
+                (shape grid x y mapper min-x max-x min-y max-y))
             (:conc-name nil)
             (:copier nil))
+  (shape :rect :type keyword)
   (grid (tg::%make-grid) :type tg:grid)
-  (origin-x 0 :type u:ub32)
-  (origin-y 0 :type u:ub32)
+  (x 0 :type u:ub32)
+  (y 0 :type u:ub32)
   (min-x 0 :type u:ub32)
   (max-x 1 :type u:ub32)
   (min-y 0 :type u:ub32)
   (max-y 1 :type u:ub32)
-  (selector (constantly nil) :type function)
   (mapper (constantly nil) :type function))
 
-(u:fn-> %make-kernel (tg:grid function function u:ub32 u:ub32 u:ub32 u:ub32
-                              u:ub32 u:ub32)
-        kernel)
-(declaim (inline %make-kernel))
-(defun %make-kernel (grid selector mapper x y min-x max-x min-y max-y)
-  (%%make-kernel :grid grid
-                 :origin-x x
-                 :origin-y y
-                 :min-x min-x
-                 :max-x max-x
-                 :min-y min-y
-                 :max-y max-y
-                 :selector selector
-                 :mapper mapper))
-
-(u:fn-> make-kernel (tg:grid keyword
-                             &key
-                             (:x u:ub32)
-                             (:y u:ub32)
-                             (:min-x u:ub32)
-                             (:max-x u:ub32)
-                             (:min-y u:ub32)
-                             (:max-y u:ub32))
+(u:fn-> make-kernel
+        (tg:grid keyword &key
+                 (:x u:ub32) (:y u:ub32) (:min-x u:ub32) (:max-x u:ub32)
+                 (:min-y u:ub32) (:max-y u:ub32))
         kernel)
 (defun make-kernel (grid shape
                     &key (x 0) (y 0) (min-x 0) (max-x 1) (min-y 0) (max-y 1))
   (declare (optimize speed))
-  (ecase shape
-    (:rect
-     (%make-kernel grid #'select/rect #'map/rect x y min-x max-x min-y max-y))
-    (:+
-     (%make-kernel grid #'select/+ #'map/+ x y min-x max-x min-y max-y))
-    (:x
-     (%make-kernel grid #'select/x #'map/x x y min-x max-x min-y max-y))
-    (:ellipse
-     (%make-kernel grid #'select/ellipse #'map/default x y min-x max-x min-y
-                   max-y))
-    (:h
-     (%make-kernel grid #'select/h #'map/h x y min-x max-x min-y max-y))
-    (:v
-     (%make-kernel grid #'select/v #'map/v x y min-x max-x min-y max-y))
-    (:.
-     (%make-kernel grid #'select/rect #'map/rect x y 0 0 0 0))))
+  (let ((func (u:href *shapes* shape)))
+    (declare (function func))
+    (values (funcall func grid x y min-x max-x min-y max-y))))
 
 (u:fn-> reshape (kernel keyword) kernel)
 (defun reshape (kernel shape)
   (declare (optimize speed))
   (make-kernel (grid kernel)
                shape
-               :x (origin-x kernel)
-               :y (origin-y kernel)
+               :x (x kernel)
+               :y (y kernel)
                :min-x (min-x kernel)
                :max-x (max-x kernel)
                :min-y (min-y kernel)
                :max-y (max-y kernel)))
 
-(u:fn-> select/rect (kernel u:b32 u:b32) boolean)
-(defun select/rect (kernel x y)
-  (declare (optimize speed))
-  (let ((min-x (min-x kernel))
-        (max-x (max-x kernel))
-        (min-y (min-y kernel))
-        (max-y (max-y kernel)))
-    (and (>= x (- max-x))
-         (>= y (- max-y))
-         (<= x max-x)
-         (<= y max-y)
-         (not (and (> x (- min-x))
-                   (> y (- min-y))
-                   (< x min-x)
-                   (< y min-y))))))
+(defun register-shape (name mapper)
+  (setf (u:href *shapes* name)
+        (lambda (grid x y min-x max-x min-y max-y)
+          (%make-kernel name grid x y mapper min-x max-x min-y max-y))))
 
-(u:fn-> select/+ (kernel u:b32 u:b32) boolean)
-(defun select/+ (kernel x y)
-  (declare (optimize speed))
-  (or (and (zerop y)
-           (<= (min-x kernel) (abs x) (max-x kernel)))
-      (and (zerop x)
-           (<= (min-y kernel) (abs y) (max-y kernel)))))
+(defmacro define-shape (shape () &body body)
+  (let ((do-name (u:symbolicate '#:do/ shape))
+        (map-name (u:symbolicate '#:map/ shape)))
+    `(progn
+       (defmacro ,do-name ((kernel cell) &body body)
+         (u:with-gensyms (grid ox oy)
+           `(let ((,grid (grid ,kernel))
+                  (,ox (x ,kernel))
+                  (,oy (y ,kernel)))
+              ,,@body)))
+       (u:fn-> ,map-name (kernel function) list)
+       (defun ,map-name (kernel func)
+         (declare (optimize speed))
+         (let (results)
+           (,do-name (kernel cell)
+             (u:when-let ((value (funcall func cell)))
+               (push value results)))
+           results))
+       (register-shape ,shape #',map-name))))
 
-(u:fn-> select/ellipse (kernel u:b32 u:b32) boolean)
-(defun select/ellipse (kernel x y)
-  (declare (optimize speed))
-  (let ((max-x (max-x kernel))
-        (max-y (max-y kernel)))
-    (<= (+ (/ (expt x 2) (expt (/ max-x 2) 2f0))
-           (/ (expt y 2) (expt (/ max-y 2) 2f0)))
+(defmacro default-mapper (test)
+  `(u:with-gensyms (max-x max-y x y)
+     `(loop :with ,max-x = (max-x ,kernel)
+            :with ,max-y = (max-y ,kernel)
+            :for ,y :of-type u:b32 :from ,max-y :downto (- ,max-y)
+            :do (loop :for ,x :of-type u:b32 :from (- ,max-x) :to ,max-x
+                      :for ,cell = (when ,,test
+                                     (%resolve ,grid ,ox ,oy ,x ,y))
+                      :when ,cell
+                        :do (progn ,@body)))))
+
+(defmacro %resolve (grid ox oy x y)
+  `(tg:get-cell ,grid (+ ,ox ,x) (+ ,oy ,y)))
+
+(defmacro do-kernel ((kernel cell) &body body)
+  (u:once-only (kernel)
+    `(case (shape ,kernel)
+       (:rect (do/rect (,kernel ,cell) ,@body))
+       (:+ (do/+ (,kernel ,cell) ,@body))
+       (:x (do/x (,kernel ,cell) ,@body))
+       (:ellipse (do/ellipse (,kernel ,cell) ,@body))
+       (t (map ,kernel (lambda (,cell) ,@body))))))
+
+(defmacro define-properties (&body body)
+  (let ((properties (mapcar #'u:ensure-list body)))
+    `(progn
+       (tg:define-properties ,@(mapcar #'car properties))
+       ,@(loop :for (name . options) :in properties
+               :append (generate-property-functions name options)))))
+
+(define-shape :rect ()
+  (u:with-gensyms (max-x max-y x y)
+    `(loop :with ,max-x = (max-x ,kernel)
+           :with ,max-y = (max-y ,kernel)
+           :for ,y :from ,max-y :downto (- ,max-y)
+           :do (loop :for ,x :from (- ,max-x) :to ,max-x
+                     :for ,cell = (%resolve ,grid ,ox ,oy ,x ,y)
+                     :when ,cell
+                       :do (progn ,@body)))))
+
+(define-shape :ellipse ()
+  (default-mapper
+   `(<= (+ (/ (expt ,x 2) (expt (/ ,max-x 2) 2f0))
+           (/ (expt ,y 2) (expt (/ ,max-y 2) 2f0)))
         1f0)))
 
-(u:fn-> select/x (kernel u:b32 u:b32) boolean)
-(defun select/x (kernel x y)
-  (declare (optimize speed))
-  (let ((max (max (max-x kernel)
-                  (max-y kernel))))
-    (and (<= (abs x) max)
-         (<= (abs y) max)
-         (= (abs x) (abs y)))))
+(define-shape :+ ()
+  (u:with-gensyms (max-x max-y x y)
+    `(let ((,max-x (max-x ,kernel))
+           (,max-y (max-y ,kernel)))
+       (loop :for ,y :from (- ,max-y) :to ,max-y
+             :for ,cell = (%resolve ,grid ,ox ,oy 0 ,y)
+             :when ,cell
+               :do (progn ,@body))
+       (loop :for ,x :from (- ,max-x) :below 0
+             :for ,cell = (%resolve ,grid ,ox ,oy ,x 0)
+             :when ,cell
+               :do (progn ,@body))
+       (loop :for ,x :from 1 :to ,max-x
+             :for ,cell = (%resolve ,grid ,ox ,oy ,x 0)
+             :when ,cell
+               :do (progn ,@body)))))
 
-(u:fn-> select/h (kernel u:b32 u:b32) boolean)
-(defun select/h (kernel x y)
-  (declare (optimize speed))
-  (and (zerop y)
-       (<= (abs x) (max-x kernel))))
-
-(u:fn-> select/v (kernel u:b32 u:b32) boolean)
-(defun select/v (kernel x y)
-  (declare (optimize speed))
-  (and (zerop x)
-       (<= (abs y) (max-y kernel))))
-
-(u:fn-> select (kernel u:b32 u:b32) (or tg:cell null))
-(declaim (inline select))
-(defun select (kernel x y)
-  (declare (optimize speed))
-  (let ((x (+ (origin-x kernel) x))
-        (y (+ (origin-y kernel) y)))
-    (tg:get-cell (grid kernel) x y)))
-
-(u:fn-> %select (kernel u:b32 u:b32) (or tg:cell null))
-(defun %select (kernel x y)
-  (declare (optimize speed))
-  (when (funcall (selector kernel) kernel x y)
-    (select kernel x y)))
-
-(u:fn-> map/default (kernel function) list)
-(defun map/default (kernel func)
-  (declare (optimize speed))
-  (loop :with results = nil
-        :with max-x = (max-x kernel)
-        :with max-y = (max-y kernel)
-        :for y :from max-y :downto (- max-y)
-        :do (loop :for x :from (- max-x) :to max-x
-                  :for cell = (%select kernel x y)
-                  :when cell
-                    :do (u:when-let ((value (funcall func cell)))
-                          (push value results)))
-        :finally (return results)))
-
-(u:fn-> map/rect (kernel function) list)
-(defun map/rect (kernel func)
-  (declare (optimize speed))
-  (loop :with results = nil
-        :with max-x = (max-x kernel)
-        :with max-y = (max-y kernel)
-        :for y :from max-y :downto (- max-y)
-        :do (loop :for x :from (- max-x) :to max-x
-                  :for cell = (select kernel x y)
-                  :when cell
-                    :do (u:when-let ((value (funcall func cell)))
-                          (push value results)))
-        :finally (return results)))
-
-(u:fn-> map/+ (kernel function) list)
-(defun map/+ (kernel func)
-  (declare (optimize speed))
-  (let ((results)
-        (max-x (max-x kernel))
-        (max-y (max-y kernel)))
-    (loop :for y :from (- max-y) :to max-y
-          :for cell = (select kernel 0 y)
-          :when cell
-            :do (u:when-let ((value (funcall func cell)))
-                  (push value results)))
-    (loop :for x :from (- max-x) :below 0
-          :for cell = (select kernel x 0)
-          :when cell
-            :do (u:when-let ((value (funcall func cell)))
-                  (push value results)))
-    (loop :for x :from 1 :to max-x
-          :for cell = (select kernel x 0)
-          :when cell
-            :do (u:when-let ((value (funcall func cell)))
-                  (push value results)))
-    results))
-
-(u:fn-> map/x (kernel function) list)
-(defun map/x (kernel func)
-  (declare (optimize speed))
-  (loop :with max = (max (max-x kernel)
-                         (max-y kernel))
-        :for x :from (- max) :to max
-        :for cell1 = (select kernel x x)
-        :for cell2 = (select kernel (- x) x)
-        :when (and cell1 (funcall func cell1))
-          :collect :it
-        :when (and cell2
-                   (not (equalp cell1 cell2))
-                   (funcall func cell2))
-          :collect :it))
-
-(u:fn-> map/h (kernel function) list)
-(defun map/h (kernel func)
-  (declare (optimize speed))
-  (loop :with max = (max-x kernel)
-        :for x :from (- max) :to max
-        :for cell = (select kernel x 0)
-        :when (and cell (funcall func cell))
-          :collect :it))
-
-(u:fn-> map/v (kernel function) list)
-(defun map/v (kernel func)
-  (declare (optimize speed))
-  (loop :with max = (max-y kernel)
-        :for y :from (- max) :to max
-        :for cell = (select kernel 0 y)
-        :when (and cell (funcall func cell))
-          :collect :it))
-
-(u:fn-> map (kernel function) list)
-(defun map (kernel func)
-  (declare (optimize speed))
-  (values (funcall (mapper kernel) kernel func)))
-
-(u:fn-> detect (kernel function) boolean)
-(defun detect (kernel func)
-  (declare (optimize speed))
-  (block nil
-    (map
-     kernel
-     (lambda (x)
-       (when (funcall func x)
-         (locally (declare (optimize (safety 0)))
-           (return t)))))
-    nil))
-
-(u:fn-> count (kernel function) fixnum)
-(defun count (kernel func)
-  (declare (optimize speed))
-  (list-length (map kernel func)))
-
-(u:fn-> convolve (kernel function function) null)
-(defun convolve (kernel func test)
-  (declare (optimize speed))
-  (let ((grid (grid kernel)))
-    (dotimes (y (tg:height grid))
-      (dotimes (x (tg:width grid))
-        (setf (origin-x kernel) x
-              (origin-y kernel) y)
-        (when (funcall test kernel)
-          (funcall func kernel))))))
-
-(u:fn-> find (kernel function) list)
-(defun find (kernel test)
-  (declare (optimize speed))
-  (let ((items))
-    (convolve kernel (lambda (x) (push x items)) test)
-    items))
-
-(defun process (kernel processor
-                &key items (test (constantly t)) (generator #'identity))
-  (declare (optimize speed)
-           (function processor test generator))
-  (let ((items (or items (find kernel test))))
-    (u:while items
-      (let ((kernel (funcall generator (pop items))))
-        (when (funcall test kernel)
-          (u:when-let ((new (funcall processor kernel)))
-            (push new items)))))))
-
-(u:fn-> origin (kernel) (or tg:cell null))
-(declaim (inline origin))
-(defun origin (kernel)
-  (declare (optimize speed))
-  (select kernel 0 0))
-
-(u:fn-> align (kernel tg:cell) kernel)
-(defun align (kernel cell)
-  (declare (optimize speed))
-  (setf (origin-x kernel) (tg:x cell)
-        (origin-y kernel) (tg:y cell))
-  kernel)
-
-(u:fn-> flood-fill (kernel tg:cell function (simple-array bit (* *)))
-        hash-table)
-(defun flood-fill (kernel cell test visited)
-  (declare (optimize speed)
-           (function test))
-  (let ((cells (u:dict #'eq))
-        (work-list nil))
-    (flet ((%test-cell (cell)
-             (when (funcall test cell)
-               (setf (aref visited (tg:x cell) (tg:y cell)) 1)
-               (map (align kernel cell)
-                    (lambda (neighbor)
-                      (let ((x (tg:x neighbor))
-                            (y (tg:y neighbor)))
-                        (when (zerop (aref visited x y))
-                          (setf (aref visited x y) 1)
-                          (push neighbor work-list)))))
-               (setf (u:href cells cell) cell)
-               nil)))
-      (%test-cell cell)
-      (loop :for x = (pop work-list)
-            :while x
-            :do (%test-cell x))
-      cells)))
+(define-shape :x ()
+  (u:with-gensyms (max x cell1 cell2)
+    `(loop :with ,max = (max (max-x ,kernel) (max-y ,kernel))
+           :for ,x :from (- ,max) :to ,max
+           :for ,cell1 = (%resolve ,grid ,ox ,oy ,x ,x)
+           :for ,cell2 = (%resolve ,grid ,ox ,oy (- ,x) ,x)
+           :when ,cell1
+             :do (let ((,cell ,cell1)) ,@body)
+           :when (and ,cell2 (not (zerop ,x)))
+             :do (let ((,cell ,cell2)) ,@Body))))
 
 (defun generate-property-functions (name options)
   (u:with-gensyms (object cell)
@@ -372,9 +201,104 @@
               (tg:remove-properties ,cell ,constant-name)))
           (export ',remover-name))))))
 
-(defmacro define-properties (&body body)
-  (let ((properties (mapcar #'u:ensure-list body)))
-    `(progn
-       (tg:define-properties ,@(mapcar #'car properties))
-       ,@(loop :for (name . options) :in properties
-               :append (generate-property-functions name options)))))
+(u:fn-> resolve (kernel u:b32 u:b32) (or tg:cell null))
+(declaim (inline resolve))
+(defun resolve (kernel x y)
+  (declare (optimize speed))
+  (%resolve (grid kernel) (x kernel) (y kernel) x y))
+
+(u:fn-> map (kernel function) list)
+(defun map (kernel func)
+  (declare (optimize speed))
+  (values (funcall (mapper kernel) kernel func)))
+
+(u:fn-> detect (kernel function
+                        &optional (integer 1 #.most-positive-fixnum))
+        boolean)
+(defun detect (kernel func &optional (count 1))
+  (declare (optimize speed))
+  (let ((i 0))
+    (declare (fixnum i))
+    (do-kernel (kernel cell)
+      (when (funcall func cell)
+        (incf i)
+        (when (>= i count)
+          (locally (declare (optimize (safety 0)))
+            (return-from detect t)))))
+    nil))
+
+(u:fn-> count (kernel function) fixnum)
+(defun count (kernel func)
+  (declare (optimize speed))
+  (let ((count 0))
+    (declare (fixnum count))
+    (do-kernel (kernel cell)
+      (when (funcall func cell)
+        (incf count)))
+    count))
+
+(u:fn-> convolve (kernel function &optional function) null)
+(defun convolve (kernel func &optional test)
+  (declare (optimize speed))
+  (let ((grid (grid kernel)))
+    (dotimes (y (tg:height grid))
+      (dotimes (x (tg:width grid))
+        (setf (x kernel) x
+              (y kernel) y)
+        (when (or (null test) (funcall test kernel))
+          (funcall func kernel))))))
+
+(u:fn-> find (kernel function) list)
+(defun find (kernel test)
+  (declare (optimize speed))
+  (let ((items))
+    (convolve kernel (lambda (x) (push x items)) test)
+    items))
+
+(defun process (kernel processor
+                &key items (test (constantly t)) (generator #'identity))
+  (declare (optimize speed)
+           (function processor test generator))
+  (let ((items (or items (find kernel test))))
+    (u:while items
+      (let ((kernel (funcall generator (pop items))))
+        (when (funcall test kernel)
+          (u:when-let ((new (funcall processor kernel)))
+            (push new items)))))))
+
+(u:fn-> origin (kernel) (or tg:cell null))
+(declaim (inline origin))
+(defun origin (kernel)
+  (declare (optimize speed))
+  (%resolve (grid kernel) (x kernel) (y kernel) 0 0))
+
+(u:fn-> align (kernel tg:cell) kernel)
+(defun align (kernel cell)
+  (declare (optimize speed))
+  (setf (x kernel) (tg:x cell)
+        (y kernel) (tg:y cell))
+  kernel)
+
+(u:fn-> flood-fill (kernel tg:cell function (simple-array bit (* *)))
+        hash-table)
+(defun flood-fill (kernel cell test visited)
+  (declare (optimize speed)
+           (function test))
+  (let ((cells (u:dict #'eq))
+        (work-list nil))
+    (flet ((%test-cell (cell)
+             (when (funcall test cell)
+               (setf (aref visited (tg:x cell) (tg:y cell)) 1)
+               (do-kernel ((align kernel cell) neighbor)
+                 (let ((x (tg:x neighbor))
+                       (y (tg:y neighbor)))
+                   (when (zerop (aref visited x y))
+                     (setf (aref visited x y) 1)
+                     (push neighbor work-list))))
+               (setf (u:href cells cell) cell)
+               nil)))
+      (%test-cell cell)
+      (loop :for x = (pop work-list)
+            :while x
+            :do (%test-cell x))
+      cells)))
