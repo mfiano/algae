@@ -1163,6 +1163,18 @@
    (lambda (condition stream)
      (format stream "Invalid generator id: ~s." (id condition)))))
 
+(define-condition invalid-range ()
+  ((%lower-bound :reader lower-bound
+                 :initarg :min)
+   (%upper-bound :reader upper-bound
+                 :initarg :max))
+  (:report
+   (lambda (condition stream)
+     (format stream "Invalid range: [min: ~s, max: ~s].~%~
+                     Upper bound should be larger than lower bound."
+             (lower-bound condition)
+             (upper-bound condition)))))
+
 (defgeneric make-seed (source))
 
 (defmethod make-seed ((source pool))
@@ -1232,6 +1244,8 @@
 (u:fn-> int (keyword u:b32 u:b32 &optional boolean) fixnum)
 (defun int (id min max &optional (inclusive t))
   (declare (optimize speed))
+  (unless (< min max)
+    (error 'invalid-range :min min :max max))
   (if =pool=
       (u:if-let ((generator (u:href (generators =pool=) id)))
         (values (pcg:pcg-random (kernel generator) min max inclusive))
@@ -1241,6 +1255,8 @@
 (u:fn-> float (keyword single-float single-float) single-float)
 (defun float (id min max)
   (declare (optimize speed))
+  (unless (< min max)
+    (error 'invalid-range :min min :max max))
   (if =pool=
       (u:if-let ((generator (u:href (generators =pool=) id)))
         (values (pcg:pcg-random (kernel generator) min max))
