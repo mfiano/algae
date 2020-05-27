@@ -10,7 +10,8 @@
                #:ironclad
                #:global-vars
                #:net.mfiano.lisp.golden-utils
-               #:net.mfiano.lisp.origin)
+               #:net.mfiano.lisp.origin
+               #:zpng)
   :pathname "src"
   :serial t
   :components
@@ -35,4 +36,11 @@
     ((:file "rng-pool")))
    (:module "uuid"
     :components
-    ((:file "uuid")))))
+    ((:file "uuid")))
+   (:module "noise"
+    :components
+    ((:file "package")
+     (:file "common")
+     (:file "perlin")
+     (:file "simplex")
+     (:file "opensimplex")))))
