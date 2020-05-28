@@ -19,7 +19,8 @@
    #:make-generator
    #:make-pool
    #:reset-pool
-   #:shuffle))
+   #:shuffle
+   #:uint))
 
 (in-package #:net.mfiano.lisp.algae.rng-pool)
 
@@ -1178,8 +1179,8 @@
 (defgeneric make-seed (source))
 
 (defmethod make-seed ((source pool))
-  (let ((low (int :master 0 (1- (expt 2 32)) nil))
-        (high (int :master 0 (1- (expt 2 32)) nil)))
+  (let ((low (uint :master 0 (1- (expt 2 32)) nil))
+        (high (uint :master 0 (1- (expt 2 32)) nil)))
     (logior (ash high 32) low)))
 
 (defmethod make-seed ((source string))
@@ -1243,6 +1244,17 @@
 
 (u:fn-> int (keyword u:b32 u:b32 &optional boolean) fixnum)
 (defun int (id min max &optional (inclusive t))
+  (declare (optimize speed))
+  (unless (< min max)
+    (error 'invalid-range :min min :max max))
+  (if =pool=
+      (u:if-let ((generator (u:href (generators =pool=) id)))
+        (values (pcg:pcg-random (kernel generator) min max inclusive))
+        (error 'generator-not-found :id id))
+      (error 'pool-not-initialized)))
+
+(u:fn-> uint (keyword u:ub32 u:ub32 &optional boolean) fixnum)
+(defun uint (id min max &optional (inclusive t))
   (declare (optimize speed))
   (unless (< min max)
     (error 'invalid-range :min min :max max))
