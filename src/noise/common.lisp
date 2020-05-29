@@ -41,8 +41,8 @@
 
 (defmacro pget (&body (first . rest))
   (if rest
-      `(aref +p+ (+ ,first (pget ,@rest)))
-      `(aref +p+ ,first)))
+      `(aref +p+ (logand (+ ,first (pget ,@rest)) 255))
+      `(aref +p+ (logand ,first 255))))
 
 (defun test (file type dimensions &key (width 1024) (height 1024) (scale 32))
   (flet ((make-func (name)
