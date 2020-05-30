@@ -1172,7 +1172,7 @@
   (:report
    (lambda (condition stream)
      (format stream "Invalid range: [min: ~s, max: ~s].~%~
-                     Upper bound should be larger than lower bound."
+                     Lower bound can not be larger than upper bound."
              (lower-bound condition)
              (upper-bound condition)))))
 
@@ -1245,7 +1245,7 @@
 (u:fn-> int (keyword u:b32 u:b32 &optional boolean) fixnum)
 (defun int (id min max &optional (inclusive t))
   (declare (optimize speed))
-  (unless (< min max)
+  (unless (<= min max)
     (error 'invalid-range :min min :max max))
   (if =pool=
       (u:if-let ((generator (u:href (generators =pool=) id)))
@@ -1256,7 +1256,7 @@
 (u:fn-> uint (keyword u:ub32 u:ub32 &optional boolean) fixnum)
 (defun uint (id min max &optional (inclusive t))
   (declare (optimize speed))
-  (unless (< min max)
+  (unless (<= min max)
     (error 'invalid-range :min min :max max))
   (if =pool=
       (u:if-let ((generator (u:href (generators =pool=) id)))
@@ -1267,7 +1267,7 @@
 (u:fn-> float (keyword single-float single-float) single-float)
 (defun float (id min max)
   (declare (optimize speed))
-  (unless (< min max)
+  (unless (<= min max)
     (error 'invalid-range :min min :max max))
   (if =pool=
       (u:if-let ((generator (u:href (generators =pool=) id)))
