@@ -1,0 +1,37 @@
+(in-package #:net.mfiano.lisp.algae.noise)
+
+(u:defun-inline %perlin-2d (x y)
+  (declare (optimize speed)
+           (f50 x y))
+  (flet ((grad (hash x y)
+           (let* ((h (logand hash 7))
+                  (u (if (< h 4) x y))
+                  (v (if (< h 4) y x)))
+             (+ (if (zerop (logand h 1)) u (- u))
+                (if (zerop (logand h 2)) v (- v))))))
+    (u:mvlet* ((xi xf (truncate x))
+               (yi yf (truncate y))
+               (xi (logand xi 255))
+               (yi (logand yi 255))
+               (u (fade xf))
+               (v (fade yf))
+               (p +permutation+)
+               (a (+ (aref p xi) yi))
+               (aa (aref p a))
+               (ab (aref p (1+ a)))
+               (b (+ (aref p (1+ xi)) yi))
+               (ba (aref p b))
+               (bb (aref p (1+ b))))
+      (float
+       (lerp v
+             (lerp u
+                   (grad (pget p aa) xf yf)
+                   (grad (pget p ba) (1- xf) yf))
+             (lerp u
+                   (grad (pget p ab) xf (1- yf))
+                   (grad (pget p bb) (1- xf) (1- yf))))
+       1f0))))
+
+(defun perlin-2d (x y)
+  (declare (real x y))
+  (%perlin-2d (float x 1d0) (float y 1d0)))

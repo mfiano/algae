@@ -1,11 +1,9 @@
 (in-package #:net.mfiano.lisp.algae.noise)
 
-;;;; Common utilities used internally by noise generation algorithms.
-
 (deftype f50 () '(double-float #.(- (expt 2d0 50)) #.(expt 2d0 50)))
 
 (declaim (type (simple-array u:ub8 (512)) +p+))
-(u:define-constant +p+
+(u:define-constant +permutation+
     (let ((permutation #(151 160 137 91 90 15 131 13 201 95 96 53 194 233 7 225
                          140 36 103 30 69 142 8 99 37 240 21 10 23 190 6 148 247
                          120 234 75 0 26 197 62 94 252 219 203 117 35 11 32 57

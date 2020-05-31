@@ -4,7 +4,7 @@
 
 (u:define-constant +open-simplex-2d/squish+ (/ (1- (sqrt 3d0)) 2))
 
-(u:define-constant +open-simplex-2d/scale+ (/ (* 47 (/ 2 (sqrt 3d0)))))
+(u:define-constant +open-simplex-2d/scale+ (/ 47d0))
 
 (u:define-constant +open-simplex-2d/gradients+
     (let ((data '(5 2 2 5 -5 2 -2 5 5 -2 2 -5 -5 -2 -2 -5)))
@@ -61,7 +61,7 @@
      :ins (+ xins yins))))
 
 (u:defun-inline open-simplex-2d/extrapolate (xsb ysb dx dy)
-  (let ((index (logand (pget +p+ ysb xsb) 14)))
+  (let ((index (logand (pget +permutation+ ysb xsb) 14)))
     (+ (* (aref +open-simplex-2d/gradients+ index) dx)
        (* (aref +open-simplex-2d/gradients+ (1+ index)) dy))))
 
