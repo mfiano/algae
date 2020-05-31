@@ -39,10 +39,10 @@
   (declare (double-float x))
   (* x x x (+ (* x (- (* x 6) 15)) 10)))
 
-(defmacro pget (&body (first . rest))
+(defmacro pget (table &body (first . rest))
   (if rest
-      `(aref +p+ (logand (+ ,first (pget ,@rest)) 255))
-      `(aref +p+ (logand ,first 255))))
+      `(aref ,table (logand (+ ,first (pget ,table ,@rest)) 255))
+      `(aref ,table (logand ,first 255))))
 
 (defun test (file type dimensions &key (width 1024) (height 1024) (scale 32))
   (flet ((make-func (name)
@@ -57,7 +57,8 @@
                                      :width width
                                      :height height)
           :with data = (zpng:data-array png)
-          :with name = (u:symbolicate type (u:make-keyword dimensions) '#:d)
+          :with name = (u:symbolicate
+                        type '#:- (u:make-keyword dimensions) '#:d)
           :for y :below height
           :do (loop :for x :below width
                     :for noise = (funcall (make-func name)

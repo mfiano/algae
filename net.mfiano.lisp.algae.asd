@@ -43,4 +43,5 @@
      (:file "common")
      (:file "perlin")
      (:file "simplex")
-     (:file "opensimplex")))))
+     (:file "open-simplex-2d")
+     (:file "open-simplex-3d")))))
