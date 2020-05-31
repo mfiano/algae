@@ -5,11 +5,14 @@
    (#:u #:net.mfiano.lisp.golden-utils))
   (:use #:cl)
   (:export
-   #:perlin1d
-   #:perlin2d
-   #:perlin3d
-   #:perlin4d
-   #:simplex1d
-   #:simplex2d
-   #:simplex3d
-   #:simplex4d))
+   #:open-simplex-2d
+   #:open-simplex-3d
+   #:open-simplex-2d
+   #:perlin-1d
+   #:perlin-2d
+   #:perlin-3d
+   #:perlin-4d
+   #:simplex-1d
+   #:simplex-2d
+   #:simplex-3d
+   #:simplex-4d))
