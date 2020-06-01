@@ -121,7 +121,7 @@
                (open-simplex-3d/extrapolate xsb ysb zsb dx dy dz))))
     (values)))
 
-(u:defun-inline open-simplex-3d/contribute1 (state)
+(defun open-simplex-3d/contribute1 (state)
   (let ((xsb (oss3-xsb state))
         (ysb (oss3-ysb state))
         (zsb (oss3-zsb state)))
@@ -154,7 +154,7 @@
                                 ysb
                                 (1+ zsb))))
 
-(u:defun-inline open-simplex-3d/contribute2 (state)
+(defun open-simplex-3d/contribute2 (state)
   (let ((xsb (oss3-xsb state))
         (ysb (oss3-ysb state))
         (zsb (oss3-zsb state)))
@@ -187,7 +187,7 @@
                                 (1+ ysb)
                                 (1+ zsb))))
 
-(u:defun-inline open-simplex-3d/contribute3 (state)
+(defun open-simplex-3d/contribute3 (state)
   (let ((xsb (oss3-xsb state))
         (ysb (oss3-ysb state))
         (zsb (oss3-zsb state)))
@@ -234,7 +234,7 @@
                                 (1+ ysb)
                                 (1+ zsb))))
 
-(u:defun-inline open-simplex-3d/contribute4 (state)
+(defun open-simplex-3d/contribute4 (state)
   (open-simplex-3d/contribute state
                               (oss3-dx-ext0 state)
                               (oss3-dy-ext0 state)
@@ -250,7 +250,7 @@
                               (oss3-ysv-ext1 state)
                               (oss3-zsv-ext1 state)))
 
-(u:defun-inline open-simplex-3d/in1 (state)
+(defun open-simplex-3d/in1 (state)
   (let* ((point-a 1)
          (point-b 2)
          (score-a (oss3-xins state))
@@ -352,7 +352,7 @@
           (oss3-dz3 state) (- dz0 1 sq))
     (values)))
 
-(u:defun-inline open-simplex-3d/in2 (state)
+(defun open-simplex-3d/in2 (state)
   (let* ((point-a 6)
          (point-b 5)
          (score-a (oss3-xins state))
@@ -458,7 +458,7 @@
           (oss3-dz0 state) (- dz0 1 sq3))
     (values)))
 
-(u:defun-inline open-simplex-3d/in3 (state)
+(defun open-simplex-3d/in3 (state)
   (let* ((point-a 0)
          (point-b 0)
          (score-a 0d0)
