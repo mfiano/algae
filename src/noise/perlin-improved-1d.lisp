@@ -1,6 +1,6 @@
 (in-package #:net.mfiano.lisp.algae.noise)
 
-(u:defun-inline %perlin-1d (x)
+(u:defun-inline %perlin-improved-1d (x)
   (declare (optimize speed)
            (f50 x))
   (flet ((grad (hash x)
@@ -17,6 +17,6 @@
                (b (aref p (1+ xi))))
       (float (lerp u (grad a x) (grad b (1- x))) 1f0))))
 
-(defun perlin-1d (x)
+(defun perlin-improved-1d (x)
   (declare (real x))
-  (%perlin-1d (float x 1d0)))
+  (%perlin-improved-1d (float x 1d0)))

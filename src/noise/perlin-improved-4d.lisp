@@ -1,6 +1,6 @@
 (in-package #:net.mfiano.lisp.algae.noise)
 
-(u:defun-inline %perlin-4d (x y z w)
+(u:defun-inline %perlin-improved-4d (x y z w)
   (declare (optimize speed)
            (f50 x y z w))
   (flet ((grad (hash x y z w)
@@ -73,6 +73,6 @@
                       (grad (pget p xi1 yi1 zi1 wi1) xf-1 yf-1 zf-1 wf-1)))))
              1f0))))
 
-(defun perlin-4d (x y z w)
+(defun perlin-improved-4d (x y z w)
   (declare (real x y z w))
-  (%perlin-4d (float x 1d0) (float y 1d0) (float z 1d0) (float w 1d0)))
+  (%perlin-improved-4d (float x 1d0) (float y 1d0) (float z 1d0) (float w 1d0)))

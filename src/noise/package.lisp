@@ -8,10 +8,10 @@
    #:open-simplex-2d
    #:open-simplex-3d
    #:open-simplex-4d
-   #:perlin-1d
-   #:perlin-2d
-   #:perlin-3d
-   #:perlin-4d
+   #:perlin-improved-1d
+   #:perlin-improved-2d
+   #:perlin-improved-3d
+   #:perlin-improved-4d
    #:simplex-1d
    #:simplex-2d
    #:simplex-3d
