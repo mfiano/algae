@@ -43,6 +43,7 @@
      (:file "common")
      (:file "open-simplex-2d")
      (:file "open-simplex-3d")
+     (:file "open-simplex-4d")
      (:file "perlin-1d")
      (:file "perlin-2d")
      (:file "perlin-3d")

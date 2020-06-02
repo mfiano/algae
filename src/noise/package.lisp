@@ -7,7 +7,7 @@
   (:export
    #:open-simplex-2d
    #:open-simplex-3d
-   #:open-simplex-2d
+   #:open-simplex-4d
    #:perlin-1d
    #:perlin-2d
    #:perlin-3d
