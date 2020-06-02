@@ -526,12 +526,14 @@
                      (oss4-dx-ext0 state) (1+ dx0)
                      (oss4-dx-ext1 state) dx0
                      (oss4-dx-ext2 state) dx0)
-              (psetf (oss4-xsv-ext0 state) (1+ xsb)
-                     (oss4-xsv-ext1 state) (1+ xsb)
-                     (oss4-xsv-ext2 state) (1+ xsb)
-                     (oss4-dx-ext0 state) (1- dx0)
-                     (oss4-dx-ext1 state) (1- dx0)
-                     (oss4-dx-ext2 state) (1- dx0)))
+              (let ((xsv (1+ xsb))
+                    (dx (1- dx0)))
+                (psetf (oss4-xsv-ext0 state) xsv
+                       (oss4-xsv-ext1 state) xsv
+                       (oss4-xsv-ext2 state) xsv
+                       (oss4-dx-ext0 state) dx
+                       (oss4-dx-ext1 state) dx
+                       (oss4-dx-ext2 state) dx)))
           (cond
             ((zerop (logand c 2))
              (psetf (oss4-ysv-ext0 state) ysb
@@ -548,12 +550,14 @@
                 (decf (oss4-ysv-ext1 state))
                 (incf (oss4-dy-ext1 state)))))
             (t
-             (psetf (oss4-ysv-ext0 state) (1+ ysb)
-                    (oss4-ysv-ext1 state) (1+ ysb)
-                    (oss4-ysv-ext2 state) (1+ ysb)
-                    (oss4-dy-ext0 state) (1- dy0)
-                    (oss4-dy-ext1 state) (1- dy0)
-                    (oss4-dy-ext2 state) (1- dy0))))
+             (let ((ysv (1+ ysb))
+                   (dy (1- dy0)))
+               (psetf (oss4-ysv-ext0 state) ysv
+                      (oss4-ysv-ext1 state) ysv
+                      (oss4-ysv-ext2 state) ysv
+                      (oss4-dy-ext0 state) dy
+                      (oss4-dy-ext1 state) dy
+                      (oss4-dy-ext2 state) dy))))
           (cond
             ((zerop (logand c 4))
              (psetf (oss4-zsv-ext0 state) zsb
@@ -564,9 +568,6 @@
                     (oss4-dz-ext2 state) dz0)
              (cond
                ((not (zerop (logand c 3)))
-                ;; note, this UNLESS was two branches in the reference
-                ;; implementation, but it was wrong, and SBCL correctly detected
-                ;; that it could remove dead code in the first branch.
                 (unless (= (logand c 3) 3)
                   (decf (oss4-zsv-ext1 state))
                   (incf (oss4-dz-ext1 state))))
@@ -574,12 +575,14 @@
                 (decf (oss4-zsv-ext2 state))
                 (incf (oss4-dz-ext2 state)))))
             (t
-             (psetf (oss4-zsv-ext0 state) (1+ zsb)
-                    (oss4-zsv-ext1 state) (1+ zsb)
-                    (oss4-zsv-ext2 state) (1+ zsb)
-                    (oss4-dz-ext0 state) (1- dz0)
-                    (oss4-dz-ext1 state) (1- dz0)
-                    (oss4-dz-ext2 state) (1- dz0))))
+             (let ((zsv (1+ zsb))
+                   (dz (1- dz0)))
+               (psetf (oss4-zsv-ext0 state) zsv
+                      (oss4-zsv-ext1 state) zsv
+                      (oss4-zsv-ext2 state) zsv
+                      (oss4-dz-ext0 state) dz
+                      (oss4-dz-ext1 state) dz
+                      (oss4-dz-ext2 state) dz))))
           (if (zerop (logand c 8))
               (psetf (oss4-wsv-ext0 state) wsb
                      (oss4-wsv-ext1 state) wsb
@@ -587,12 +590,14 @@
                      (oss4-dw-ext0 state) dw0
                      (oss4-dw-ext1 state) dw0
                      (oss4-dw-ext2 state) (1+ dw0))
-              (psetf (oss4-wsv-ext0 state) (1+ wsb)
-                     (oss4-wsv-ext1 state) (1+ wsb)
-                     (oss4-wsv-ext2 state) (1+ wsb)
-                     (oss4-dw-ext0 state) (1- dw0)
-                     (oss4-dw-ext1 state) (1- dw0)
-                     (oss4-dw-ext2 state) (1- dw0))))
+              (let ((wsv (1+ wsb))
+                    (dw (1- dw0)))
+                (psetf (oss4-wsv-ext0 state) wsv
+                       (oss4-wsv-ext1 state) wsv
+                       (oss4-wsv-ext2 state) wsv
+                       (oss4-dw-ext0 state) dw
+                       (oss4-dw-ext1 state) dw
+                       (oss4-dw-ext2 state) dw))))
         (let ((c (logior point-a point-b)))
           (if (zerop (logand c 1))
               (psetf (oss4-xsv-ext0 state) xsb
@@ -601,20 +606,23 @@
                      (oss4-dx-ext0 state) (- dx0 sq2)
                      (oss4-dx-ext1 state) (- (1+ dx0) sq)
                      (oss4-dx-ext2 state) (- dx0 sq))
-              (psetf (oss4-xsv-ext0 state) (1+ xsb)
-                     (oss4-xsv-ext1 state) (1+ xsb)
-                     (oss4-xsv-ext2 state) (1+ xsb)
-                     (oss4-dx-ext0 state) (- dx0 1 sq2)
-                     (oss4-dx-ext1 state) (- dx0 1 sq)
-                     (oss4-dx-ext2 state) (- dx0 1 sq)))
+              (let ((xsv (1+ xsb))
+                    (dx (- dx0 1 sq)))
+                (psetf (oss4-xsv-ext0 state) xsv
+                       (oss4-xsv-ext1 state) xsv
+                       (oss4-xsv-ext2 state) xsv
+                       (oss4-dx-ext0 state) (- dx0 1 sq2)
+                       (oss4-dx-ext1 state) dx
+                       (oss4-dx-ext2 state) dx)))
           (cond
             ((zerop (logand c 2))
-             (psetf (oss4-ysv-ext0 state) ysb
-                    (oss4-ysv-ext1 state) ysb
-                    (oss4-ysv-ext2 state) ysb
-                    (oss4-dy-ext0 state) (- dy0 sq2)
-                    (oss4-dy-ext1 state) (- dy0 sq)
-                    (oss4-dy-ext2 state) (- dy0 sq))
+             (let ((dy (- dy0 sq)))
+               (psetf (oss4-ysv-ext0 state) ysb
+                      (oss4-ysv-ext1 state) ysb
+                      (oss4-ysv-ext2 state) ysb
+                      (oss4-dy-ext0 state) (- dy0 sq2)
+                      (oss4-dy-ext1 state) dy
+                      (oss4-dy-ext2 state) dy))
              (cond
                ((= (logand c 1) 1)
                 (decf (oss4-ysv-ext1 state))
@@ -623,20 +631,23 @@
                 (decf (oss4-ysv-ext2 state))
                 (incf (oss4-dy-ext2 state)))))
             (t
-             (psetf (oss4-ysv-ext0 state) (1+ ysb)
-                    (oss4-ysv-ext1 state) (1+ ysb)
-                    (oss4-ysv-ext2 state) (1+ ysb)
-                    (oss4-dy-ext0 state) (- dy0 1 sq2)
-                    (oss4-dy-ext1 state) (- dy0 1 sq)
-                    (oss4-dy-ext2 state) (- dy0 1 sq))))
+             (let ((ysv (1+ ysb))
+                   (dy (- dy0 1 sq)))
+               (psetf (oss4-ysv-ext0 state) ysv
+                      (oss4-ysv-ext1 state) ysv
+                      (oss4-ysv-ext2 state) ysv
+                      (oss4-dy-ext0 state) (- dy0 1 sq2)
+                      (oss4-dy-ext1 state) dy
+                      (oss4-dy-ext2 state) dy))))
           (cond
             ((zerop (logand c 4))
-             (psetf (oss4-zsv-ext0 state) zsb
-                    (oss4-zsv-ext1 state) zsb
-                    (oss4-zsv-ext2 state) zsb
-                    (oss4-dz-ext0 state) (- dz0 sq2)
-                    (oss4-dz-ext1 state) (- dz0 sq)
-                    (oss4-dz-ext2 state) (- dz0 sq))
+             (let ((dz (- dz0 sq)))
+               (psetf (oss4-zsv-ext0 state) zsb
+                      (oss4-zsv-ext1 state) zsb
+                      (oss4-zsv-ext2 state) zsb
+                      (oss4-dz-ext0 state) (- dz0 sq2)
+                      (oss4-dz-ext1 state) dz
+                      (oss4-dz-ext2 state) dz))
              (cond
                ((= (logand c 3) 3)
                 (decf (oss4-zsv-ext1 state))
@@ -645,12 +656,14 @@
                 (decf (oss4-zsv-ext2 state))
                 (incf (oss4-dz-ext2 state)))))
             (t
-             (psetf (oss4-zsv-ext0 state) (1+ zsb)
-                    (oss4-zsv-ext1 state) (1+ zsb)
-                    (oss4-zsv-ext2 state) (1+ zsb)
-                    (oss4-dz-ext0 state) (- dz0 1 sq2)
-                    (oss4-dz-ext1 state) (- dz0 1 sq)
-                    (oss4-dz-ext2 state) (- dz0 1 sq))))
+             (let ((zsv (1+ zsb))
+                   (dz (- dz0 1 sq)))
+               (psetf (oss4-zsv-ext0 state) zsv
+                      (oss4-zsv-ext1 state) zsv
+                      (oss4-zsv-ext2 state) zsv
+                      (oss4-dz-ext0 state) (- dz0 1 sq2)
+                      (oss4-dz-ext1 state) dz
+                      (oss4-dz-ext2 state) dz))))
           (cond
             ((zerop (logand c 8))
              (psetf (oss4-wsv-ext0 state) wsb
@@ -660,28 +673,34 @@
                     (oss4-dw-ext1 state) (- dw0 sq)
                     (oss4-dw-ext2 state) (- (1+ dw0) sq)))
             (t
-             (psetf (oss4-wsv-ext0 state) (1+ wsb)
-                    (oss4-wsv-ext1 state) (1+ wsb)
-                    (oss4-wsv-ext2 state) (1+ wsb)
-                    (oss4-dw-ext0 state) (- dw0 1 sq2)
-                    (oss4-dw-ext1 state) (- dw0 1 sq)
-                    (oss4-dw-ext2 state) (- dw0 1 sq))))))
-    (setf (oss4-dx1 state) (- dx0 1 sq)
-          (oss4-dy1 state) (- dy0 sq)
-          (oss4-dz1 state) (- dz0 sq)
-          (oss4-dw1 state) (- dw0 sq)
-          (oss4-dx2 state) (- dx0 sq)
-          (oss4-dy2 state) (- dy0 1 sq)
-          (oss4-dz2 state) (oss4-dz1 state)
-          (oss4-dw2 state) (oss4-dw1 state)
-          (oss4-dx3 state) (oss4-dx2 state)
-          (oss4-dy3 state) (oss4-dy1 state)
-          (oss4-dz3 state) (- dz0 1 sq)
-          (oss4-dw3 state) (oss4-dw1 state)
-          (oss4-dx4 state) (oss4-dx2 state)
-          (oss4-dy4 state) (oss4-dy1 state)
-          (oss4-dz4 state) (oss4-dz1 state)
-          (oss4-dw4 state) (- dw0 1 sq))
+             (let ((wsv (1+ wsb))
+                   (dw (- dw0 1 sq)))
+               (psetf (oss4-wsv-ext0 state) wsv
+                      (oss4-wsv-ext1 state) wsv
+                      (oss4-wsv-ext2 state) wsv
+                      (oss4-dw-ext0 state) (- dw0 1 sq2)
+                      (oss4-dw-ext1 state) dw
+                      (oss4-dw-ext2 state) dw))))))
+    (let ((dy1 (- dy0 sq))
+          (dz1 (- dz0 sq))
+          (dw1 (- dw0 sq))
+          (dx2 (- dx0 sq)))
+      (psetf (oss4-dx1 state) (- dx0 1 sq)
+             (oss4-dy1 state) dy1
+             (oss4-dz1 state) dz1
+             (oss4-dw1 state) dw1
+             (oss4-dx2 state) dx2
+             (oss4-dy2 state) (- dy0 1 sq)
+             (oss4-dz2 state) dz1
+             (oss4-dw2 state) dw1
+             (oss4-dx3 state) dx2
+             (oss4-dy3 state) dy1
+             (oss4-dz3 state) (- dz0 1 sq)
+             (oss4-dw3 state) dw1
+             (oss4-dx4 state) dx2
+             (oss4-dy4 state) dy1
+             (oss4-dz4 state) dz1
+             (oss4-dw4 state) (- dw0 1 sq)))
     (values)))
 
 (defun open-simplex-4d/in2 (state)
@@ -725,26 +744,31 @@
             (< uins score-b))
         (let ((c (if (< score-b score-a) point-b point-a)))
           (if (not (zerop (logand c 1)))
-              (psetf (oss4-xsv-ext0 state) (+ xsb 2)
-                     (oss4-xsv-ext1 state) (1+ xsb)
-                     (oss4-xsv-ext2 state) (1+ xsb)
-                     (oss4-dx-ext0 state) (- dx0 2 sq4)
-                     (oss4-dx-ext1 state) (- dx0 1 sq4)
-                     (oss4-dx-ext2 state) (- dx0 1 sq4))
-              (psetf (oss4-xsv-ext0 state) xsb
-                     (oss4-xsv-ext1 state) xsb
-                     (oss4-xsv-ext2 state) xsb
-                     (oss4-dx-ext0 state) (- dx0 sq4)
-                     (oss4-dx-ext1 state) (- dx0 sq4)
-                     (oss4-dx-ext2 state) (- dx0 sq4)))
+              (let ((xsv (1+ xsb))
+                    (dx (- dx0 1 sq4)))
+                (psetf (oss4-xsv-ext0 state) (+ xsb 2)
+                       (oss4-xsv-ext1 state) xsv
+                       (oss4-xsv-ext2 state) xsv
+                       (oss4-dx-ext0 state) (- dx0 2 sq4)
+                       (oss4-dx-ext1 state) dx
+                       (oss4-dx-ext2 state) dx))
+              (let ((dx (- dx0 sq4)))
+                (psetf (oss4-xsv-ext0 state) xsb
+                       (oss4-xsv-ext1 state) xsb
+                       (oss4-xsv-ext2 state) xsb
+                       (oss4-dx-ext0 state) dx
+                       (oss4-dx-ext1 state) dx
+                       (oss4-dx-ext2 state) dx)))
           (cond
             ((not (zerop (logand c 2)))
-             (psetf (oss4-ysv-ext0 state) (1+ ysb)
-                    (oss4-ysv-ext1 state) (1+ ysb)
-                    (oss4-ysv-ext2 state) (1+ ysb)
-                    (oss4-dy-ext0 state) (- dy0 1 sq4)
-                    (oss4-dy-ext1 state) (- dy0 1 sq4)
-                    (oss4-dy-ext2 state) (- dy0 1 sq4))
+             (let ((ysv (1+ ysb))
+                   (dy (- dy0 1 sq4)))
+               (psetf (oss4-ysv-ext0 state) ysv
+                      (oss4-ysv-ext1 state) ysv
+                      (oss4-ysv-ext2 state) ysv
+                      (oss4-dy-ext0 state) dy
+                      (oss4-dy-ext1 state) dy
+                      (oss4-dy-ext2 state) dy))
              (cond
                ((not (zerop (logand c 1)))
                 (incf (oss4-ysv-ext1 state))
@@ -753,25 +777,25 @@
                 (incf (oss4-ysv-ext0 state))
                 (decf (oss4-dy-ext0 state)))))
             (t
-             (psetf (oss4-ysv-ext0 state) ysb
-                    (oss4-ysv-ext1 state) ysb
-                    (oss4-ysv-ext2 state) ysb
-                    (oss4-dy-ext0 state) (- dy0 sq4)
-                    (oss4-dy-ext1 state) (- dy0 sq4)
-                    (oss4-dy-ext2 state) (- dy0 sq4))))
+             (let ((dy (- dy0 sq4)))
+               (psetf (oss4-ysv-ext0 state) ysb
+                      (oss4-ysv-ext1 state) ysb
+                      (oss4-ysv-ext2 state) ysb
+                      (oss4-dy-ext0 state) dy
+                      (oss4-dy-ext1 state) dy
+                      (oss4-dy-ext2 state) dy))))
           (cond
             ((not (zerop (logand c 4)))
-             (psetf (oss4-zsv-ext0 state) (1+ zsb)
-                    (oss4-zsv-ext1 state) (1+ zsb)
-                    (oss4-zsv-ext2 state) (1+ zsb)
-                    (oss4-dz-ext0 state) (- dz0 1 sq4)
-                    (oss4-dz-ext1 state) (- dz0 1 sq4)
-                    (oss4-dz-ext2 state) (- dz0 1 sq4))
+             (let ((zsv (1+ zsb))
+                   (dz (- dz0 1 sq4)))
+               (psetf (oss4-zsv-ext0 state) zsv
+                      (oss4-zsv-ext1 state) zsv
+                      (oss4-zsv-ext2 state) zsv
+                      (oss4-dz-ext0 state) dz
+                      (oss4-dz-ext1 state) dz
+                      (oss4-dz-ext2 state) dz))
              (cond
                ((not (= (logand c 3) 3))
-                ;; note, this UNLESS was two branches in the reference
-                ;; implementation, but it was wrong, and SBCL correctly detected
-                ;; that it could remove dead code in the first branch.
                 (unless (zerop (logand c 3))
                   (incf (oss4-zsv-ext1 state))
                   (decf (oss4-dz-ext1 state))))
@@ -779,47 +803,55 @@
                 (incf (oss4-zsv-ext2 state))
                 (decf (oss4-dz-ext2 state)))))
             (t
-             (psetf (oss4-zsv-ext0 state) zsb
-                    (oss4-zsv-ext1 state) zsb
-                    (oss4-zsv-ext2 state) zsb
-                    (oss4-dz-ext0 state) (- dz0 sq4)
-                    (oss4-dz-ext1 state) (- dz0 sq4)
-                    (oss4-dz-ext2 state) (- dz0 sq4))))
+             (let ((dz (- dz0 sq4)))
+               (psetf (oss4-zsv-ext0 state) zsb
+                      (oss4-zsv-ext1 state) zsb
+                      (oss4-zsv-ext2 state) zsb
+                      (oss4-dz-ext0 state) dz
+                      (oss4-dz-ext1 state) dz
+                      (oss4-dz-ext2 state) dz))))
           (if (not (zerop (logand c 8)))
-              (psetf (oss4-wsv-ext0 state) (1+ wsb)
-                     (oss4-wsv-ext1 state) (1+ wsb)
-                     (oss4-wsv-ext2 state) (+ wsb 2)
-                     (oss4-dw-ext0 state) (- dw0 1 sq4)
-                     (oss4-dw-ext1 state) (- dw0 1 sq4)
-                     (oss4-dw-ext2 state) (- dw0 2 sq4))
-              (psetf (oss4-wsv-ext0 state) wsb
-                     (oss4-wsv-ext1 state) wsb
-                     (oss4-wsv-ext2 state) wsb
-                     (oss4-dw-ext0 state) (- dw0 sq4)
-                     (oss4-dw-ext1 state) (- dw0 sq4)
-                     (oss4-dw-ext2 state) (- dw0 sq4))))
+              (let ((wsv (1+ wsb))
+                    (dw (- dw0 1 sq4)))
+                (psetf (oss4-wsv-ext0 state) wsv
+                       (oss4-wsv-ext1 state) wsv
+                       (oss4-wsv-ext2 state) (+ wsb 2)
+                       (oss4-dw-ext0 state) dw
+                       (oss4-dw-ext1 state) dw
+                       (oss4-dw-ext2 state) (- dw0 2 sq4)))
+              (let ((dw (- dw0 sq4)))
+                (psetf (oss4-wsv-ext0 state) wsb
+                       (oss4-wsv-ext1 state) wsb
+                       (oss4-wsv-ext2 state) wsb
+                       (oss4-dw-ext0 state) dw
+                       (oss4-dw-ext1 state) dw
+                       (oss4-dw-ext2 state) dw))))
         (let ((c (logand point-a point-b)))
           (if (not (zerop (logand c 1)))
-              (psetf (oss4-xsv-ext0 state) (1+ xsb)
-                     (oss4-xsv-ext1 state) (+ xsb 2)
-                     (oss4-xsv-ext2 state) (1+ xsb)
-                     (oss4-dx-ext0 state) (- dx0 1 sq2)
-                     (oss4-dx-ext1 state) (- dx0 2 sq3)
-                     (oss4-dx-ext2 state) (- dx0 1 sq3))
-              (psetf (oss4-xsv-ext0 state) xsb
-                     (oss4-xsv-ext1 state) xsb
-                     (oss4-xsv-ext2 state) xsb
-                     (oss4-dx-ext0 state) (- dx0 sq2)
-                     (oss4-dx-ext1 state) (- dx0 sq3)
-                     (oss4-dx-ext2 state) (- dx0 sq3)))
+              (let ((xsv (1+ xsb)))
+                (psetf (oss4-xsv-ext0 state) xsv
+                       (oss4-xsv-ext1 state) (+ xsb 2)
+                       (oss4-xsv-ext2 state) xsv
+                       (oss4-dx-ext0 state) (- dx0 1 sq2)
+                       (oss4-dx-ext1 state) (- dx0 2 sq3)
+                       (oss4-dx-ext2 state) (- dx0 1 sq3)))
+              (let ((dx (- dx0 sq3)))
+                (psetf (oss4-xsv-ext0 state) xsb
+                       (oss4-xsv-ext1 state) xsb
+                       (oss4-xsv-ext2 state) xsb
+                       (oss4-dx-ext0 state) (- dx0 sq2)
+                       (oss4-dx-ext1 state) dx
+                       (oss4-dx-ext2 state) dx)))
           (cond
             ((not (zerop (logand c 2)))
-             (psetf (oss4-ysv-ext0 state) (1+ ysb)
-                    (oss4-ysv-ext1 state) (1+ ysb)
-                    (oss4-ysv-ext2 state) (1+ ysb)
-                    (oss4-dy-ext0 state) (- dy0 1 sq2)
-                    (oss4-dy-ext1 state) (- dy0 1 sq3)
-                    (oss4-dy-ext2 state) (- dy0 1 sq3))
+             (let ((ysv (1+ ysb))
+                   (dy (- dy0 1 sq3)))
+               (psetf (oss4-ysv-ext0 state) ysv
+                      (oss4-ysv-ext1 state) ysv
+                      (oss4-ysv-ext2 state) ysv
+                      (oss4-dy-ext0 state) (- dy0 1 sq2)
+                      (oss4-dy-ext1 state) dy
+                      (oss4-dy-ext2 state) dy))
              (cond
                ((not (zerop (logand c 1)))
                 (incf (oss4-ysv-ext2 state))
@@ -828,20 +860,23 @@
                 (incf (oss4-ysv-ext1 state))
                 (decf (oss4-dy-ext1 state)))))
             (t
-             (psetf (oss4-ysv-ext0 state) ysb
-                    (oss4-ysv-ext1 state) ysb
-                    (oss4-ysv-ext2 state) ysb
-                    (oss4-dy-ext0 state) (- dy0 sq2)
-                    (oss4-dy-ext1 state) (- dy0 sq3)
-                    (oss4-dy-ext2 state) (- dy0 sq3))))
+             (let ((dy (- dy0 sq3)))
+               (psetf (oss4-ysv-ext0 state) ysb
+                      (oss4-ysv-ext1 state) ysb
+                      (oss4-ysv-ext2 state) ysb
+                      (oss4-dy-ext0 state) (- dy0 sq2)
+                      (oss4-dy-ext1 state) dy
+                      (oss4-dy-ext2 state) dy))))
           (cond
             ((not (zerop (logand c 4)))
-             (psetf (oss4-zsv-ext0 state) (1+ zsb)
-                    (oss4-zsv-ext1 state) (1+ zsb)
-                    (oss4-zsv-ext2 state) (1+ zsb)
-                    (oss4-dz-ext0 state) (- dz0 1 sq2)
-                    (oss4-dz-ext1 state) (- dz0 1 sq3)
-                    (oss4-dz-ext2 state) (- dz0 1 sq3))
+             (let ((zsv (1+ zsb))
+                   (dz (- dz0 1 sq3)))
+               (psetf (oss4-zsv-ext0 state) zsv
+                      (oss4-zsv-ext1 state) zsv
+                      (oss4-zsv-ext2 state) zsv
+                      (oss4-dz-ext0 state) (- dz0 1 sq2)
+                      (oss4-dz-ext1 state) dz
+                      (oss4-dz-ext2 state) dz))
              (cond
                ((not (zerop (logand c 3)))
                 (incf (oss4-zsv-ext2 state))
@@ -850,47 +885,54 @@
                 (incf (oss4-zsv-ext1 state))
                 (decf (oss4-dz-ext1 state)))))
             (t
-             (psetf (oss4-zsv-ext0 state) zsb
-                    (oss4-zsv-ext1 state) zsb
-                    (oss4-zsv-ext2 state) zsb
-                    (oss4-dz-ext0 state) (- dz0 sq2)
-                    (oss4-dz-ext1 state) (- dz0 sq3)
-                    (oss4-dz-ext2 state) (- dz0 sq3))))
+             (let ((dz (- dz0 sq3)))
+               (psetf (oss4-zsv-ext0 state) zsb
+                      (oss4-zsv-ext1 state) zsb
+                      (oss4-zsv-ext2 state) zsb
+                      (oss4-dz-ext0 state) (- dz0 sq2)
+                      (oss4-dz-ext1 state) dz
+                      (oss4-dz-ext2 state) dz))))
           (cond
             ((not (zerop (logand c 8)))
-             (psetf (oss4-wsv-ext0 state) (1+ wsb)
-                    (oss4-wsv-ext1 state) (1+ wsb)
-                    (oss4-wsv-ext2 state) (+ wsb 2)
-                    (oss4-dw-ext0 state) (- dw0 1 sq2)
-                    (oss4-dw-ext1 state) (- dw0 1 sq3)
-                    (oss4-dw-ext2 state) (- dw0 2 sq3)))
+             (let  ((wsv (1+ wsb)))
+               (psetf (oss4-wsv-ext0 state) wsv
+                      (oss4-wsv-ext1 state) wsv
+                      (oss4-wsv-ext2 state) (+ wsb 2)
+                      (oss4-dw-ext0 state) (- dw0 1 sq2)
+                      (oss4-dw-ext1 state) (- dw0 1 sq3)
+                      (oss4-dw-ext2 state) (- dw0 2 sq3))))
             (t
-             (psetf (oss4-wsv-ext0 state) wsb
-                    (oss4-wsv-ext1 state) wsb
-                    (oss4-wsv-ext2 state) wsb
-                    (oss4-dw-ext0 state) (- dw0 sq2)
-                    (oss4-dw-ext1 state) (- dw0 sq3)
-                    (oss4-dw-ext2 state) (- dw0 sq3))))))
-    (setf (oss4-dx4 state) (- dx0 1 sq3)
-          (oss4-dy4 state) (- dy0 1 sq3)
-          (oss4-dz4 state) (- dz0 1 sq3)
-          (oss4-dw4 state) (- dw0 sq3)
-          (oss4-dx3 state) (oss4-dx4 state)
-          (oss4-dy3 state) (oss4-dy4 state)
-          (oss4-dz3 state) (- dz0 sq3)
-          (oss4-dw3 state) (- dw0 1 sq3)
-          (oss4-dx2 state) (oss4-dx4 state)
-          (oss4-dy2 state) (- dy0 sq3)
-          (oss4-dz2 state) (oss4-dz4 state)
-          (oss4-dw2 state) (oss4-dw3 state)
-          (oss4-dx1 state) (- dx0 sq3)
-          (oss4-dy1 state) (oss4-dy4 state)
-          (oss4-dz1 state) (oss4-dz4 state)
-          (oss4-dw1 state) (oss4-dw3 state)
-          (oss4-dx0 state) (- dx0 1 sq4)
-          (oss4-dy0 state) (- dy0 1 sq4)
-          (oss4-dz0 state) (- dz0 1 sq4)
-          (oss4-dw0 state) (- dw0 1 sq4))
+             (let ((dw (- dw0 sq3)))
+               (psetf (oss4-wsv-ext0 state) wsb
+                      (oss4-wsv-ext1 state) wsb
+                      (oss4-wsv-ext2 state) wsb
+                      (oss4-dw-ext0 state) (- dw0 sq2)
+                      (oss4-dw-ext1 state) dw
+                      (oss4-dw-ext2 state) dw))))))
+    (let ((dw3 (- dw0 1 sq3))
+          (dx4 (- dx0 1 sq3))
+          (dy4 (- dy0 1 sq3))
+          (dz4 (- dz0 1 sq3)))
+      (psetf (oss4-dx4 state) dx4
+             (oss4-dy4 state) dy4
+             (oss4-dz4 state) dz4
+             (oss4-dw4 state) (- dw0 sq3)
+             (oss4-dx3 state) dx4
+             (oss4-dy3 state) dy4
+             (oss4-dz3 state) (- dz0 sq3)
+             (oss4-dw3 state) dw3
+             (oss4-dx2 state) dx4
+             (oss4-dy2 state) (- dy0 sq3)
+             (oss4-dz2 state) dz4
+             (oss4-dw2 state) dw3
+             (oss4-dx1 state) (- dx0 sq3)
+             (oss4-dy1 state) dy4
+             (oss4-dz1 state) dz4
+             (oss4-dw1 state) dw3
+             (oss4-dx0 state) (- dx0 1 sq4)
+             (oss4-dy0 state) (- dy0 1 sq4)
+             (oss4-dz0 state) (- dz0 1 sq4)
+             (oss4-dw0 state) (- dw0 1 sq4)))
     (values)))
 
 (defun open-simplex-4d/in3 (state)
@@ -1004,37 +1046,41 @@
                          (oss4-xsv-ext1 state) (1- xsb)
                          (oss4-dx-ext0 state) (- dx0 sq3)
                          (oss4-dx-ext1 state) (- (1+ dx0) sq2))
-                  (psetf (oss4-xsv-ext0 state) (1+ xsb)
-                         (oss4-xsv-ext1 state) (1+ xsb)
-                         (oss4-dx-ext0 state) (- dx0 1 sq3)
-                         (oss4-dx-ext1 state) (- dx0 1 sq2)))
+                  (let ((xsv (1+ xsb)))
+                    (psetf (oss4-xsv-ext0 state) xsv
+                           (oss4-xsv-ext1 state) xsv
+                           (oss4-dx-ext0 state) (- dx0 1 sq3)
+                           (oss4-dx-ext1 state) (- dx0 1 sq2))))
               (if (zerop (logand c1 2))
                   (psetf (oss4-ysv-ext0 state) ysb
                          (oss4-ysv-ext1 state) (1- ysb)
                          (oss4-dy-ext0 state) (- dy0 sq3)
                          (oss4-dy-ext1 state) (- (1+ dy0) sq2))
-                  (psetf (oss4-ysv-ext0 state) (1+ ysb)
-                         (oss4-ysv-ext1 state) (1+ ysb)
-                         (oss4-dy-ext0 state) (- dy0 1 sq3)
-                         (oss4-dy-ext1 state) (- dy0 1 sq2)))
+                  (let ((ysv (1+ ysb)))
+                    (psetf (oss4-ysv-ext0 state) ysv
+                           (oss4-ysv-ext1 state) ysv
+                           (oss4-dy-ext0 state) (- dy0 1 sq3)
+                           (oss4-dy-ext1 state) (- dy0 1 sq2))))
               (if (zerop (logand c1 4))
                   (psetf (oss4-zsv-ext0 state) zsb
                          (oss4-zsv-ext1 state) (1- zsb)
                          (oss4-dz-ext0 state) (- dz0 sq3)
                          (oss4-dz-ext1 state) (- (1+ dz0) sq2))
-                  (psetf (oss4-zsv-ext0 state) (1+ zsb)
-                         (oss4-zsv-ext1 state) (1+ zsb)
-                         (oss4-dz-ext0 state) (- dz0 1 sq3)
-                         (oss4-dz-ext1 state) (- dz0 1 sq2)))
+                  (let ((zsv (1+ zsb)))
+                    (psetf (oss4-zsv-ext0 state) zsv
+                           (oss4-zsv-ext1 state) zsv
+                           (oss4-dz-ext0 state) (- dz0 1 sq3)
+                           (oss4-dz-ext1 state) (- dz0 1 sq2))))
               (if (zerop (logand c1 8))
                   (psetf (oss4-wsv-ext0 state) wsb
                          (oss4-wsv-ext1 state) (1- wsb)
                          (oss4-dw-ext0 state) (- dw0 sq3)
                          (oss4-dw-ext1 state) (- (1+ dw0) sq2))
-                  (psetf (oss4-wsv-ext0 state) (1+ wsb)
-                         (oss4-wsv-ext1 state) (1+ wsb)
-                         (oss4-dw-ext0 state) (- dw0 1 sq3)
-                         (oss4-dw-ext1 state) (- dw0 1 sq2)))
+                  (let ((wsv (1+ wsb)))
+                    (psetf (oss4-wsv-ext0 state) wsv
+                           (oss4-wsv-ext1 state) wsv
+                           (oss4-dw-ext0 state) (- dw0 1 sq3)
+                           (oss4-dw-ext1 state) (- dw0 1 sq2))))
               (psetf (oss4-xsv-ext2 state) xsb
                      (oss4-ysv-ext2 state) ysb
                      (oss4-zsv-ext2 state) zsb
@@ -1070,16 +1116,19 @@
                          (oss4-xsv-ext1 state) xsb
                          (oss4-dx-ext0 state) (- (1+ dx0) sq)
                          (oss4-dx-ext1 state) (- dx0 sq))
-                  (psetf (oss4-xsv-ext0 state) (1+ xsb)
-                         (oss4-xsv-ext1 state) (1+ xsb)
-                         (oss4-dx-ext0 state) (- dx0 1 sq)
-                         (oss4-dx-ext1 state) (- dx0 1 sq)))
+                  (let ((xsv (1+ xsb))
+                        (dx (- dx0 1 sq)))
+                    (psetf (oss4-xsv-ext0 state) xsv
+                           (oss4-xsv-ext1 state) xsv
+                           (oss4-dx-ext0 state) dx
+                           (oss4-dx-ext1 state) dx)))
               (cond
                 ((zerop (logand c 2))
-                 (psetf (oss4-ysv-ext0 state) ysb
-                        (oss4-ysv-ext1 state) ysb
-                        (oss4-dy-ext0 state) (- dy0 sq)
-                        (oss4-dy-ext1 state) (- dy0 sq))
+                 (let ((dy (- dy0 sq)))
+                   (psetf (oss4-ysv-ext0 state) ysb
+                          (oss4-ysv-ext1 state) ysb
+                          (oss4-dy-ext0 state) dy
+                          (oss4-dy-ext1 state) dy))
                  (cond
                    ((= (logand c 1) 1)
                     (decf (oss4-ysv-ext0 state))
@@ -1088,16 +1137,19 @@
                     (decf (oss4-ysv-ext1 state))
                     (incf (oss4-dy-ext1 state)))))
                 (t
-                 (psetf (oss4-ysv-ext0 state) (1+ ysb)
-                        (oss4-ysv-ext1 state) (1+ ysb)
-                        (oss4-dy-ext0 state) (- dy0 1 sq)
-                        (oss4-dy-ext1 state) (- dy0 1 sq))))
+                 (let ((ysv (1+ ysb))
+                       (dy (- dy0 1 sq)))
+                   (psetf (oss4-ysv-ext0 state) ysv
+                          (oss4-ysv-ext1 state) ysv
+                          (oss4-dy-ext0 state) dy
+                          (oss4-dy-ext1 state) dy))))
               (cond
                 ((zerop (logand c 4))
-                 (psetf (oss4-zsv-ext0 state) zsb
-                        (oss4-zsv-ext1 state) zsb
-                        (oss4-dz-ext0 state) (- dz0 sq)
-                        (oss4-dz-ext1 state) (- dz0 sq))
+                 (let ((dz (- dz0 sq)))
+                   (psetf (oss4-zsv-ext0 state) zsb
+                          (oss4-zsv-ext1 state) zsb
+                          (oss4-dz-ext0 state) dz
+                          (oss4-dz-ext1 state) dz))
                  (cond
                    ((= (logand c 3) 3)
                     (decf (oss4-zsv-ext0 state))
@@ -1106,10 +1158,12 @@
                     (decf (oss4-zsv-ext1 state))
                     (incf (oss4-dz-ext1 state)))))
                 (t
-                 (psetf (oss4-zsv-ext0 state) (1+ zsb)
-                        (oss4-zsv-ext1 state) (1+ zsb)
-                        (oss4-dz-ext0 state) (- dz0 1 sq)
-                        (oss4-dz-ext1 state) (- dz0 1 sq))))
+                 (let ((zsv (1+ zsb))
+                       (dz (- dz0 1 sq)))
+                   (psetf (oss4-zsv-ext0 state) zsv
+                          (oss4-zsv-ext1 state) zsv
+                          (oss4-dz-ext0 state) dz
+                          (oss4-dz-ext1 state) dz))))
               (cond
                 ((zerop (logand c 8))
                  (psetf (oss4-wsv-ext0 state) wsb
@@ -1117,10 +1171,12 @@
                         (oss4-dw-ext0 state) (- dw0 sq)
                         (oss4-dw-ext1 state) (- (1+ dw0) sq)))
                 (t
-                 (psetf (oss4-wsv-ext0 state) (1+ wsb)
-                        (oss4-wsv-ext1 state) (1+ wsb)
-                        (oss4-dw-ext0 state) (- dw0 1 sq)
-                        (oss4-dw-ext1 state) (- dw0 1 sq))))))
+                 (let ((wsv (1+ wsb))
+                       (dw (- dw0 1 sq)))
+                   (psetf (oss4-wsv-ext0 state) wsv
+                          (oss4-wsv-ext1 state) wsv
+                          (oss4-dw-ext0 state) dw
+                          (oss4-dw-ext1 state) dw))))))
         (let ((c1 (if a-bigger-p point-a point-b))
               (c2 (if a-bigger-p point-b point-a)))
           (if (zerop (logand c1 1))
@@ -1128,16 +1184,19 @@
                      (oss4-xsv-ext1 state) xsb
                      (oss4-dx-ext0 state) (- (1+ dx0) sq)
                      (oss4-dx-ext1 state) (- dx0 sq))
-              (psetf (oss4-xsv-ext0 state) (1+ xsb)
-                     (oss4-xsv-ext1 state) (1+ xsb)
-                     (oss4-dx-ext0 state) (- dx0 1 sq)
-                     (oss4-dx-ext1 state) (- dx0 1 sq)))
+              (let ((xsv (1+ xsb))
+                    (dx (- dx0 1 sq)))
+                (psetf (oss4-xsv-ext0 state) xsv
+                       (oss4-xsv-ext1 state) xsv
+                       (oss4-dx-ext0 state) dx
+                       (oss4-dx-ext1 state) dx)))
           (cond
             ((zerop (logand c1 2))
-             (psetf (oss4-ysv-ext0 state) ysb
-                    (oss4-ysv-ext1 state) ysb
-                    (oss4-dy-ext0 state) (- dy0 sq)
-                    (oss4-dy-ext1 state) (- dy0 sq))
+             (let ((dy (- dy0 sq)))
+               (psetf (oss4-ysv-ext0 state) ysb
+                      (oss4-ysv-ext1 state) ysb
+                      (oss4-dy-ext0 state) dy
+                      (oss4-dy-ext1 state) dy))
              (cond
                ((= (logand c1 1) 1)
                 (decf (oss4-ysv-ext0 state))
@@ -1146,16 +1205,19 @@
                 (decf (oss4-ysv-ext1 state))
                 (incf (oss4-dy-ext1 state)))))
             (t
-             (psetf (oss4-ysv-ext0 state) (1+ ysb)
-                    (oss4-ysv-ext1 state) (1+ ysb)
-                    (oss4-dy-ext0 state) (- dy0 1 sq)
-                    (oss4-dy-ext1 state) (- dy0 1 sq))))
+             (let ((ysv (1+ ysb))
+                   (dy (- dy0 1 sq)))
+               (psetf (oss4-ysv-ext0 state) ysv
+                      (oss4-ysv-ext1 state) ysv
+                      (oss4-dy-ext0 state) dy
+                      (oss4-dy-ext1 state) dy))))
           (cond
             ((zerop (logand c1 4))
-             (psetf (oss4-zsv-ext0 state) zsb
-                    (oss4-zsv-ext1 state) zsb
-                    (oss4-dz-ext0 state) (- dz0 sq)
-                    (oss4-dz-ext1 state) (- dz0 sq))
+             (let ((dz (- dz0 sq)))
+               (psetf (oss4-zsv-ext0 state) zsb
+                      (oss4-zsv-ext1 state) zsb
+                      (oss4-dz-ext0 state) dz
+                      (oss4-dz-ext1 state) dz))
              (cond
                ((= (logand c1 3) 3)
                 (decf (oss4-zsv-ext0 state))
@@ -1164,19 +1226,23 @@
                 (decf (oss4-zsv-ext1 state))
                 (incf (oss4-dz-ext1 state)))))
             (t
-             (psetf (oss4-zsv-ext0 state) (1+ zsb)
-                    (oss4-zsv-ext1 state) (1+ zsb)
-                    (oss4-dz-ext0 state) (- dz0 1 sq)
-                    (oss4-dz-ext1 state) (- dz0 1 sq))))
+             (let ((zsv (1+ zsb))
+                   (dz (- dz0 1 sq)))
+               (psetf (oss4-zsv-ext0 state) zsv
+                      (oss4-zsv-ext1 state) zsv
+                      (oss4-dz-ext0 state) dz
+                      (oss4-dz-ext1 state) dz))))
           (if (zerop (logand c1 8))
               (psetf (oss4-wsv-ext0 state) wsb
                      (oss4-wsv-ext1 state) (1- wsb)
                      (oss4-dw-ext0 state) (- dw0 sq)
                      (oss4-dw-ext1 state) (- (1+ dw0) sq))
-              (psetf (oss4-wsv-ext0 state) (1+ wsb)
-                     (oss4-wsv-ext1 state) (1+ wsb)
-                     (oss4-dw-ext0 state) (- dw0 1 sq)
-                     (oss4-dw-ext1 state) (- dw0 1 sq)))
+              (let ((wsv (1+ wsb))
+                    (dw (- dw0 1 sq)))
+                (psetf (oss4-wsv-ext0 state) wsv
+                       (oss4-wsv-ext1 state) wsv
+                       (oss4-dw-ext0 state) dw
+                       (oss4-dw-ext1 state) dw)))
           (psetf (oss4-xsv-ext2 state) xsb
                  (oss4-ysv-ext2 state) ysb
                  (oss4-zsv-ext2 state) zsb
@@ -1198,46 +1264,58 @@
             (t
              (incf (oss4-wsv-ext2 state) 2)
              (decf (oss4-dw-ext2 state) 2)))))
-    (setf (oss4-dx1 state) (- dx0 1 sq)
-          (oss4-dy1 state) (- dy0 sq)
-          (oss4-dz1 state) (- dz0 sq)
-          (oss4-dw1 state) (- dw0 sq)
-          (oss4-dx2 state) (- dx0 sq)
-          (oss4-dy2 state) (- dy0 1 sq)
-          (oss4-dz2 state) (oss4-dz1 state)
-          (oss4-dw2 state) (oss4-dw1 state)
-          (oss4-dx3 state) (oss4-dx2 state)
-          (oss4-dy3 state) (oss4-dy1 state)
-          (oss4-dz3 state) (- dz0 1 sq)
-          (oss4-dw3 state) (oss4-dw1 state)
-          (oss4-dx4 state) (oss4-dx2 state)
-          (oss4-dy4 state) (oss4-dy1 state)
-          (oss4-dz4 state) (oss4-dz1 state)
-          (oss4-dw4 state) (- dw0 1 sq)
-          (oss4-dx5 state) (- dx0 1 sq2)
-          (oss4-dy5 state) (- dy0 1 sq2)
-          (oss4-dz5 state) (- dz0 sq2)
-          (oss4-dw5 state) (- dw0 sq2)
-          (oss4-dx6 state) (- dx0 1 sq2)
-          (oss4-dy6 state) (- dy0 sq2)
-          (oss4-dz6 state) (- dz0 1 sq2)
-          (oss4-dw6 state) (- dw0 sq2)
-          (oss4-dx7 state) (- dx0 1 sq2)
-          (oss4-dy7 state) (- dy0 sq2)
-          (oss4-dz7 state) (- dz0 sq2)
-          (oss4-dw7 state) (- dw0 1 sq2)
-          (oss4-dx8 state) (- dx0 sq2)
-          (oss4-dy8 state) (- dy0 1 sq2)
-          (oss4-dz8 state) (- dz0 1 sq2)
-          (oss4-dw8 state) (- dw0 sq2)
-          (oss4-dx9 state) (- dx0 sq2)
-          (oss4-dy9 state) (- dy0 1 sq2)
-          (oss4-dz9 state) (- dz0 sq2)
-          (oss4-dw9 state) (- dw0 1 sq2)
-          (oss4-dx10 state) (- dx0 sq2)
-          (oss4-dy10 state) (- dy0 sq2)
-          (oss4-dz10 state) (- dz0 1 sq2)
-          (oss4-dw10 state) (- dw0 1 sq2))
+    (let ((dy1 (- dy0 sq))
+          (dz1 (- dz0 sq))
+          (dw1 (- dw0 sq))
+          (dx2 (- dx0 sq))
+          (dx5 (- dx0 1 sq2))
+          (dy5 (- dy0 1 sq2))
+          (dz5 (- dz0 sq2))
+          (dw5 (- dw0 sq2))
+          (dy6 (- dy0 sq2))
+          (dz6 (- dz0 1 sq2))
+          (dw7 (- dw0 1 sq2))
+          (dx8 (- dx0 sq2)))
+      (psetf (oss4-dx1 state) (- dx0 1 sq)
+             (oss4-dy1 state) dy1
+             (oss4-dz1 state) dz1
+             (oss4-dw1 state) dw1
+             (oss4-dx2 state) dx2
+             (oss4-dy2 state) (- dy0 1 sq)
+             (oss4-dz2 state) dz1
+             (oss4-dw2 state) dw1
+             (oss4-dx3 state) dx2
+             (oss4-dy3 state) dy1
+             (oss4-dz3 state) (- dz0 1 sq)
+             (oss4-dw3 state) dw1
+             (oss4-dx4 state) dx2
+             (oss4-dy4 state) dy1
+             (oss4-dz4 state) dz1
+             (oss4-dw4 state) (- dw0 1 sq)
+             (oss4-dx5 state) dx5
+             (oss4-dy5 state) dy5
+             (oss4-dz5 state) dz5
+             (oss4-dw5 state) dw5
+             (oss4-dx6 state) dx5
+             (oss4-dy6 state) dy6
+             (oss4-dz6 state) dz6
+             (oss4-dw6 state) dw5
+             (oss4-dx7 state) dx5
+             (oss4-dy7 state) dy6
+             (oss4-dz7 state) dz5
+             (oss4-dw7 state) dw7
+             (oss4-dx8 state) dx8
+             (oss4-dy8 state) dy5
+             (oss4-dz8 state) dz6
+             (oss4-dw8 state) dw5
+             (oss4-dx9 state) dx8
+             (oss4-dy9 state) dy5
+             (oss4-dz9 state) dz5
+             (oss4-dw9 state) dw7
+             (oss4-dx10 state) dx8
+             (oss4-dy10 state) dy6
+             (oss4-dz10 state) dz6
+             (oss4-dw10 state) dw7))
     (values)))
 
 (defun open-simplex-4d/in4 (state)
@@ -1419,16 +1497,19 @@
                          (oss4-xsv-ext1 state) (1+ xsb)
                          (oss4-dx-ext0 state) (- dx0 2 sq3)
                          (oss4-dx-ext1 state) (- dx0 1 sq3))
-                  (psetf (oss4-xsv-ext0 state) xsb
-                         (oss4-xsv-ext1 state) xsb
-                         (oss4-dx-ext0 state) (- dx0 sq3)
-                         (oss4-dx-ext1 state) (- dx0 sq3)))
+                  (let ((dx (- dx0 sq3)))
+                    (psetf (oss4-xsv-ext0 state) xsb
+                           (oss4-xsv-ext1 state) xsb
+                           (oss4-dx-ext0 state) dx
+                           (oss4-dx-ext1 state) dx)))
               (cond
                 ((not (zerop (logand c 2)))
-                 (psetf (oss4-ysv-ext0 state) (1+ ysb)
-                        (oss4-ysv-ext1 state) (1+ ysb)
-                        (oss4-dy-ext0 state) (- dy0 1 sq3)
-                        (oss4-dy-ext1 state) (- dy0 1 sq3))
+                 (let ((ysv (1+ ysb))
+                       (dy (- dy0 1 sq3)))
+                   (psetf (oss4-ysv-ext0 state) ysv
+                          (oss4-ysv-ext1 state) ysv
+                          (oss4-dy-ext0 state) dy
+                          (oss4-dy-ext1 state) dy))
                  (cond
                    ((zerop (logand c 1))
                     (incf (oss4-ysv-ext0 state))
@@ -1437,16 +1518,19 @@
                     (incf (oss4-ysv-ext1 state))
                     (decf (oss4-dy-ext1 state)))))
                 (t
-                 (psetf (oss4-ysv-ext0 state) ysb
-                        (oss4-ysv-ext1 state) ysb
-                        (oss4-dy-ext0 state) (- dy0 sq3)
-                        (oss4-dy-ext1 state) (- dy0 sq3))))
+                 (let ((dy (- dy0 sq3)))
+                   (psetf (oss4-ysv-ext0 state) ysb
+                          (oss4-ysv-ext1 state) ysb
+                          (oss4-dy-ext0 state) dy
+                          (oss4-dy-ext1 state) dy))))
               (cond
                 ((not (zerop (logand c 4)))
-                 (psetf (oss4-zsv-ext0 state) (1+ zsb)
-                        (oss4-zsv-ext1 state) (1+ zsb)
-                        (oss4-dz-ext0 state) (- dz0 1 sq3)
-                        (oss4-dz-ext1 state) (- dz0 1 sq3))
+                 (let ((zsv (1+ zsb))
+                       (dz (- dz0 1 sq3)))
+                   (psetf (oss4-zsv-ext0 state) zsv
+                          (oss4-zsv-ext1 state) zsv
+                          (oss4-dz-ext0 state) dz
+                          (oss4-dz-ext1 state) dz))
                  (cond
                    ((zerop (logand c 3))
                     (incf (oss4-zsv-ext0 state))
@@ -1455,10 +1539,11 @@
                     (incf (oss4-zsv-ext1 state))
                     (decf (oss4-dz-ext1 state)))))
                 (t
-                 (psetf (oss4-zsv-ext0 state) zsb
-                        (oss4-zsv-ext1 state) zsb
-                        (oss4-dz-ext0 state) (- dz0 sq3)
-                        (oss4-dz-ext1 state) (- dz0 sq3))))
+                 (let ((dz (- dz0 sq3)))
+                   (psetf (oss4-zsv-ext0 state) zsb
+                          (oss4-zsv-ext1 state) zsb
+                          (oss4-dz-ext0 state) dz
+                          (oss4-dz-ext1 state) dz))))
               (cond
                 ((not (zerop (logand c 8)))
                  (psetf (oss4-wsv-ext0 state) (1+ wsb)
@@ -1466,10 +1551,11 @@
                         (oss4-dw-ext0 state) (- dw0 1 sq3)
                         (oss4-dw-ext1 state) (- dw0 2 sq3)))
                 (t
-                 (psetf (oss4-wsv-ext0 state) wsb
-                        (oss4-wsv-ext1 state) wsb
-                        (oss4-dw-ext0 state) (- dw0 sq3)
-                        (oss4-dw-ext1 state) (- dw0 sq3))))))
+                 (let ((dw (- dw0 sq3)))
+                   (psetf (oss4-wsv-ext0 state) wsb
+                          (oss4-wsv-ext1 state) wsb
+                          (oss4-dw-ext0 state) dw
+                          (oss4-dw-ext1 state) dw))))))
         (let ((c1 (if a-bigger-p point-a point-b))
               (c2 (if a-bigger-p point-b point-a)))
           (if (not (zerop (logand c1 1)))
@@ -1477,16 +1563,19 @@
                      (oss4-xsv-ext1 state) (1+ xsb)
                      (oss4-dx-ext0 state) (- dx0 2 sq3)
                      (oss4-dx-ext1 state) (- dx0 1 sq3))
-              (psetf (oss4-xsv-ext0 state) xsb
-                     (oss4-xsv-ext1 state) xsb
-                     (oss4-dx-ext0 state) (- dx0 sq3)
-                     (oss4-dx-ext1 state) (- dx0 sq3)))
+              (let ((dx (- dx0 sq3)))
+                (psetf (oss4-xsv-ext0 state) xsb
+                       (oss4-xsv-ext1 state) xsb
+                       (oss4-dx-ext0 state) dx
+                       (oss4-dx-ext1 state) dx)))
           (cond
             ((not (zerop (logand c1 2)))
-             (psetf (oss4-ysv-ext0 state) (1+ ysb)
-                    (oss4-ysv-ext1 state) (1+ ysb)
-                    (oss4-dy-ext0 state) (- dy0 1 sq3)
-                    (oss4-dy-ext1 state) (- dy0 1 sq3))
+             (let ((ysv (1+ ysb))
+                   (dy (- dy0 1 sq3)))
+               (psetf (oss4-ysv-ext0 state) ysv
+                      (oss4-ysv-ext1 state) ysv
+                      (oss4-dy-ext0 state) dy
+                      (oss4-dy-ext1 state) dy))
              (cond
                ((zerop (logand c1 1))
                 (incf (oss4-ysv-ext0 state))
@@ -1495,16 +1584,19 @@
                 (incf (oss4-ysv-ext1 state))
                 (decf (oss4-dy-ext1 state)))))
             (t
-             (psetf (oss4-ysv-ext0 state) ysb
-                    (oss4-ysv-ext1 state) ysb
-                    (oss4-dy-ext0 state) (- dy0 sq3)
-                    (oss4-dy-ext1 state) (- dy0 sq3))))
+             (let ((dy (- dy0 sq3)))
+               (psetf (oss4-ysv-ext0 state) ysb
+                      (oss4-ysv-ext1 state) ysb
+                      (oss4-dy-ext0 state) dy
+                      (oss4-dy-ext1 state) dy))))
           (cond
             ((not (zerop (logand c1 4)))
-             (psetf (oss4-zsv-ext0 state) (1+ zsb)
-                    (oss4-zsv-ext1 state) (1+ zsb)
-                    (oss4-dz-ext0 state) (- dz0 1 sq3)
-                    (oss4-dz-ext1 state) (- dz0 1 sq3))
+             (let ((zsv (1+ zsb))
+                   (dz (- dz0 1 sq3)))
+               (psetf (oss4-zsv-ext0 state) zsv
+                      (oss4-zsv-ext1 state) zsv
+                      (oss4-dz-ext0 state) dz
+                      (oss4-dz-ext1 state) dz))
              (cond
                ((zerop (logand c1 3))
                 (incf (oss4-zsv-ext0 state))
@@ -1513,19 +1605,21 @@
                 (incf (oss4-zsv-ext1 state))
                 (decf (oss4-dz-ext1 state)))))
             (t
-             (psetf (oss4-zsv-ext0 state) zsb
-                    (oss4-zsv-ext1 state) zsb
-                    (oss4-dz-ext0 state) (- dz0 sq3)
-                    (oss4-dz-ext1 state) (- dz0 sq3))))
+             (let ((dz (- dz0 sq3)))
+               (psetf (oss4-zsv-ext0 state) zsb
+                      (oss4-zsv-ext1 state) zsb
+                      (oss4-dz-ext0 state) dz
+                      (oss4-dz-ext1 state) dz))))
           (if (not (zerop (logand c1 8)))
               (psetf (oss4-wsv-ext0 state) (1+ wsb)
                      (oss4-wsv-ext1 state) (+ wsb 2)
                      (oss4-dw-ext0 state) (- dw0 1 sq3)
                      (oss4-dw-ext1 state) (- dw0 2 sq3))
-              (psetf (oss4-wsv-ext0 state) wsb
-                     (oss4-wsv-ext1 state) wsb
-                     (oss4-dw-ext0 state) (- dw0 sq3)
-                     (oss4-dw-ext1 state) (- dw0 sq3)))
+              (let ((dw (- dw0 sq3)))
+                (psetf (oss4-wsv-ext0 state) wsb
+                       (oss4-wsv-ext1 state) wsb
+                       (oss4-dw-ext0 state) dw
+                       (oss4-dw-ext1 state) dw)))
           (psetf (oss4-xsv-ext2 state) (1+ xsb)
                  (oss4-ysv-ext2 state) (1+ ysb)
                  (oss4-zsv-ext2 state) (1+ zsb)
@@ -1547,46 +1641,58 @@
             (t
              (decf (oss4-wsv-ext2 state) 2)
              (incf (oss4-dw-ext2 state) 2)))))
-    (setf (oss4-dx4 state) (- dx0 1 sq3)
-          (oss4-dy4 state) (- dy0 1 sq3)
-          (oss4-dz4 state) (- dz0 1 sq3)
-          (oss4-dw4 state) (- dw0 sq3)
-          (oss4-dx3 state) (oss4-dx4 state)
-          (oss4-dy3 state) (oss4-dy4 state)
-          (oss4-dz3 state) (- dz0 sq3)
-          (oss4-dw3 state) (- dw0 1 sq3)
-          (oss4-dx2 state) (oss4-dx4 state)
-          (oss4-dy2 state) (- dy0 sq3)
-          (oss4-dz2 state) (oss4-dz4 state)
-          (oss4-dw2 state) (oss4-dw3 state)
-          (oss4-dx1 state) (- dx0 sq3)
-          (oss4-dy1 state) (oss4-dy4 state)
-          (oss4-dz1 state) (oss4-dz4 state)
-          (oss4-dw1 state) (oss4-dw3 state)
-          (oss4-dx5 state) (- dx0 1 sq2)
-          (oss4-dy5 state) (- dy0 1 sq2)
-          (oss4-dz5 state) (- dz0 sq2)
-          (oss4-dw5 state) (- dw0 sq2)
-          (oss4-dx6 state) (- dx0 1 sq2)
-          (oss4-dy6 state) (- dy0 sq2)
-          (oss4-dz6 state) (- dz0 1 sq2)
-          (oss4-dw6 state) (- dw0 sq2)
-          (oss4-dx7 state) (- dx0 1 sq2)
-          (oss4-dy7 state) (- dy0 sq2)
-          (oss4-dz7 state) (- dz0 sq2)
-          (oss4-dw7 state) (- dw0 1 sq2)
-          (oss4-dx8 state) (- dx0 sq2)
-          (oss4-dy8 state) (- dy0 1 sq2)
-          (oss4-dz8 state) (- dz0 1 sq2)
-          (oss4-dw8 state) (- dw0 sq2)
-          (oss4-dx9 state) (- dx0 sq2)
-          (oss4-dy9 state) (- dy0 1 sq2)
-          (oss4-dz9 state) (- dz0 sq2)
-          (oss4-dw9 state) (- dw0 1 sq2)
-          (oss4-dx10 state) (- dx0 sq2)
-          (oss4-dy10 state) (- dy0 sq2)
-          (oss4-dz10 state) (- dz0 1 sq2)
-          (oss4-dw10 state) (- dw0 1 sq2))
+    (let ((dw3 (- dw0 1 sq3))
+          (dx4 (- dx0 1 sq3))
+          (dy4 (- dy0 1 sq3))
+          (dz4 (- dz0 1 sq3))
+          (dx5 (- dx0 1 sq2))
+          (dy5 (- dy0 1 sq2))
+          (dz5 (- dz0 sq2))
+          (dw5 (- dw0 sq2))
+          (dy6 (- dy0 sq2))
+          (dz6 (- dz0 1 sq2))
+          (dw7 (- dw0 1 sq2))
+          (dx8 (- dx0 sq2)))
+      (psetf (oss4-dx4 state) dx4
+             (oss4-dy4 state) dy4
+             (oss4-dz4 state) dz4
+             (oss4-dw4 state) (- dw0 sq3)
+             (oss4-dx3 state) dx4
+             (oss4-dy3 state) dy4
+             (oss4-dz3 state) (- dz0 sq3)
+             (oss4-dw3 state) dw3
+             (oss4-dx2 state) dx4
+             (oss4-dy2 state) (- dy0 sq3)
+             (oss4-dz2 state) dz4
+             (oss4-dw2 state) dw3
+             (oss4-dx1 state) (- dx0 sq3)
+             (oss4-dy1 state) dy4
+             (oss4-dz1 state) dz4
+             (oss4-dw1 state) dw3
+             (oss4-dx5 state) dx5
+             (oss4-dy5 state) dy5
+             (oss4-dz5 state) dz5
+             (oss4-dw5 state) dw5
+             (oss4-dx6 state) dx5
+             (oss4-dy6 state) dy6
+             (oss4-dz6 state) dz6
+             (oss4-dw6 state) dw5
+             (oss4-dx7 state) dx5
+             (oss4-dy7 state) dy6
+             (oss4-dz7 state) dz5
+             (oss4-dw7 state) dw7
+             (oss4-dx8 state) dx8
+             (oss4-dy8 state) dy5
+             (oss4-dz8 state) dz6
+             (oss4-dw8 state) dw5
+             (oss4-dx9 state) dx8
+             (oss4-dy9 state) dy5
+             (oss4-dz9 state) dz5
+             (oss4-dw9 state) dw7
+             (oss4-dx10 state) dx8
+             (oss4-dy10 state) dy6
+             (oss4-dz10 state) dz6
+             (oss4-dw10 state) dw7))
     (values)))
 
 (defun %open-simplex-4d (x y z w)

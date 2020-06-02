@@ -282,10 +282,12 @@
                      (oss3-xsv-ext1 state) xsb
                      (oss3-dx-ext0 state) (1+ dx0)
                      (oss3-dx-ext1 state) dx0)
-              (psetf (oss3-xsv-ext0 state) (1+ xsb)
-                     (oss3-xsv-ext1 state) (1+ xsb)
-                     (oss3-dx-ext0 state) (1- dx0)
-                     (oss3-dx-ext1 state) (1- dx0)))
+              (let ((xsv (1+ xsb))
+                    (dx (1- dx0)))
+                (psetf (oss3-xsv-ext0 state) xsv
+                       (oss3-xsv-ext1 state) xsv
+                       (oss3-dx-ext0 state) dx
+                       (oss3-dx-ext1 state) dx)))
           (cond
             ((zerop (logand c 2))
              (psetf (oss3-ysv-ext0 state) ysb
@@ -300,56 +302,66 @@
                 (decf (oss3-ysv-ext0 state))
                 (incf (oss3-dy-ext0 state)))))
             (t
-             (psetf (oss3-ysv-ext0 state) (1+ ysb)
-                    (oss3-ysv-ext1 state) (1+ ysb)
-                    (oss3-dy-ext0 state) (1- dy0)
-                    (oss3-dy-ext1 state) (1- dy0))))
+             (let ((ysv (1+ ysb))
+                   (dy (1- dy0)))
+               (psetf (oss3-ysv-ext0 state) ysv
+                      (oss3-ysv-ext1 state) ysv
+                      (oss3-dy-ext0 state) dy
+                      (oss3-dy-ext1 state) dy))))
           (if (zerop (logand c 4))
               (psetf (oss3-zsv-ext0 state) zsb
                      (oss3-zsv-ext1 state) (1- zsb)
                      (oss3-dz-ext0 state) dz0
                      (oss3-dz-ext1 state) (1+ dz0))
-              (psetf (oss3-zsv-ext0 state) (1+ zsb)
-                     (oss3-zsv-ext1 state) (1+ zsb)
-                     (oss3-dz-ext0 state) (1- dz0)
-                     (oss3-dz-ext1 state) (1- dz0))))
+              (let ((zsv (1+ zsb))
+                    (dz (1- dz0)))
+                (psetf (oss3-zsv-ext0 state) zsv
+                       (oss3-zsv-ext1 state) zsv
+                       (oss3-dz-ext0 state) dz
+                       (oss3-dz-ext1 state) dz))))
         (let ((c (logand (logior point-a point-b) 255)))
           (if (zerop (logand c 1))
               (psetf (oss3-xsv-ext0 state) xsb
                      (oss3-xsv-ext1 state) (1- xsb)
                      (oss3-dx-ext0 state) (- dx0 sq2)
                      (oss3-dx-ext1 state) (- (1+ dx0) sq))
-              (psetf (oss3-xsv-ext0 state) (1+ xsb)
-                     (oss3-xsv-ext1 state) (1+ xsb)
-                     (oss3-dx-ext0 state) (- dx0 1 sq2)
-                     (oss3-dx-ext1 state) (- dx0 1 sq)))
+              (let ((xsv (1+ xsb)))
+                (psetf (oss3-xsv-ext0 state) xsv
+                       (oss3-xsv-ext1 state) xsv
+                       (oss3-dx-ext0 state) (- dx0 1 sq2)
+                       (oss3-dx-ext1 state) (- dx0 1 sq))))
           (if (zerop (logand c 2))
               (psetf (oss3-ysv-ext0 state) ysb
                      (oss3-ysv-ext1 state) (1- ysb)
                      (oss3-dy-ext0 state) (- dy0 sq2)
                      (oss3-dy-ext1 state) (- (1+ dy0) sq))
-              (psetf (oss3-ysv-ext0 state) (1+ ysb)
-                     (oss3-ysv-ext1 state) (1+ ysb)
-                     (oss3-dy-ext0 state) (- dy0 1 sq2)
-                     (oss3-dy-ext1 state) (- dy0 1 sq)))
+              (let ((ysv (1+ ysb)))
+                (psetf (oss3-ysv-ext0 state) ysv
+                       (oss3-ysv-ext1 state) ysv
+                       (oss3-dy-ext0 state) (- dy0 1 sq2)
+                       (oss3-dy-ext1 state) (- dy0 1 sq))))
           (if (zerop (logand c 4))
               (psetf (oss3-zsv-ext0 state) zsb
                      (oss3-zsv-ext1 state) (1- zsb)
                      (oss3-dz-ext0 state) (- dz0 sq2)
                      (oss3-dz-ext1 state) (- (1+ dz0) sq))
-              (psetf (oss3-zsv-ext0 state) (1+ zsb)
-                     (oss3-zsv-ext1 state) (1+ zsb)
-                     (oss3-dz-ext0 state) (- dz0 1 sq2)
-                     (oss3-dz-ext1 state) (- dz0 1 sq)))))
-    (setf (oss3-dx1 state) (- dx0 1 sq)
-          (oss3-dy1 state) (- dy0 sq)
-          (oss3-dz1 state) (- dz0 sq)
-          (oss3-dx2 state) (- dx0 sq)
-          (oss3-dy2 state) (- dy0 1 sq)
-          (oss3-dz2 state) (oss3-dz1 state)
-          (oss3-dx3 state) (oss3-dx2 state)
-          (oss3-dy3 state) (oss3-dy1 state)
-          (oss3-dz3 state) (- dz0 1 sq))
+              (let ((zsv (1+ zsb)))
+                (psetf (oss3-zsv-ext0 state) zsv
+                       (oss3-zsv-ext1 state) zsv
+                       (oss3-dz-ext0 state) (- dz0 1 sq2)
+                       (oss3-dz-ext1 state) (- dz0 1 sq))))))
+    (let ((dy1 (- dy0 sq))
+          (dz1 (- dz0 sq))
+          (dx2 (- dx0 sq)))
+      (psetf (oss3-dx1 state) (- dx0 1 sq)
+             (oss3-dy1 state) dy1
+             (oss3-dz1 state) dz1
+             (oss3-dx2 state) dx2
+             (oss3-dy2 state) (- dy0 1 sq)
+             (oss3-dz2 state) dz1
+             (oss3-dx3 state) dx2
+             (oss3-dy3 state) dy1
+             (oss3-dz3 state) (- dz0 1 sq)))
     (values)))
 
 (defun open-simplex-3d/in2 (state)
@@ -385,16 +397,19 @@
                      (oss3-xsv-ext1 state) (1+ xsb)
                      (oss3-dx-ext0 state) (- dx0 2 sq3)
                      (oss3-dx-ext1 state) (- dx0 1 sq3))
-              (psetf (oss3-xsv-ext0 state) xsb
-                     (oss3-xsv-ext1 state) xsb
-                     (oss3-dx-ext0 state) (- dx0 sq3)
-                     (oss3-dx-ext1 state) (- dx0 sq3)))
+              (let ((dx (- dx0 sq3)))
+                (psetf (oss3-xsv-ext0 state) xsb
+                       (oss3-xsv-ext1 state) xsb
+                       (oss3-dx-ext0 state) dx
+                       (oss3-dx-ext1 state) dx)))
           (cond
             ((not (zerop (logand c 2)))
-             (psetf (oss3-ysv-ext0 state) (1+ ysb)
-                    (oss3-ysv-ext1 state) (1+ ysb)
-                    (oss3-dy-ext0 state) (- dy0 1 sq3)
-                    (oss3-dy-ext1 state) (- dy0 1 sq3))
+             (let ((ysv (1+ ysb))
+                   (dy (- dy0 1 sq3)))
+               (psetf (oss3-ysv-ext0 state) ysv
+                      (oss3-ysv-ext1 state) ysv
+                      (oss3-dy-ext0 state) dy
+                      (oss3-dy-ext1 state) dy))
              (cond
                ((not (zerop (logand c 1)))
                 (incf (oss3-ysv-ext1 state))
@@ -403,19 +418,21 @@
                 (incf (oss3-ysv-ext0 state))
                 (decf (oss3-dy-ext0 state)))))
             (t
-             (psetf (oss3-ysv-ext0 state) ysb
-                    (oss3-ysv-ext1 state) ysb
-                    (oss3-dy-ext0 state) (- dy0 sq3)
-                    (oss3-dy-ext1 state) (- dy0 sq3))))
+             (let ((dy (- dy0 sq3)))
+               (psetf (oss3-ysv-ext0 state) ysb
+                      (oss3-ysv-ext1 state) ysb
+                      (oss3-dy-ext0 state) dy
+                      (oss3-dy-ext1 state) dy))))
           (if (not (zerop (logand c 4)))
               (psetf (oss3-zsv-ext0 state) (1+ zsb)
                      (oss3-zsv-ext1 state) (+ zsb 2)
                      (oss3-dz-ext0 state) (- dz0 1 sq3)
                      (oss3-dz-ext1 state) (- dz0 2 sq3))
-              (psetf (oss3-zsv-ext0 state) zsb
-                     (oss3-zsv-ext1 state) zsb
-                     (oss3-dz-ext0 state) (- dz0 sq3)
-                     (oss3-dz-ext1 state) (- dz0 sq3))))
+              (let ((dz (- dz0 sq3)))
+                (psetf (oss3-zsv-ext0 state) zsb
+                       (oss3-zsv-ext1 state) zsb
+                       (oss3-dz-ext0 state) dz
+                       (oss3-dz-ext1 state) dz))))
         (let ((c (logand (logand point-a point-b) 255)))
           (if (not (zerop (logand c 1)))
               (psetf (oss3-xsv-ext0 state) (1+ xsb)
@@ -444,18 +461,21 @@
                      (oss3-zsv-ext1 state) zsb
                      (oss3-dz-ext0 state) (- dz0 sq)
                      (oss3-dz-ext1 state) (- dz0 sq2)))))
-    (setf (oss3-dx3 state) (- dx0 1 sq2)
-          (oss3-dy3 state) (- dy0 1 sq2)
-          (oss3-dz3 state) (- dz0 sq2)
-          (oss3-dx2 state) (oss3-dx3 state)
-          (oss3-dy2 state) (- dy0 sq2)
-          (oss3-dz2 state) (- dz0 1 sq2)
-          (oss3-dx1 state) (- dx0 sq2)
-          (oss3-dy1 state) (oss3-dy3 state)
-          (oss3-dz1 state) (oss3-dz2 state)
-          (oss3-dx0 state) (- dx0 1 sq3)
-          (oss3-dy0 state) (- dy0 1 sq3)
-          (oss3-dz0 state) (- dz0 1 sq3))
+    (let ((dz2 (- dz0 1 sq2))
+          (dx3 (- dx0 1 sq2))
+          (dy3 (- dy0 1 sq2)))
+      (psetf (oss3-dx3 state) dx3
+             (oss3-dy3 state) dy3
+             (oss3-dz3 state) (- dz0 sq2)
+             (oss3-dx2 state) dx3
+             (oss3-dy2 state) (- dy0 sq2)
+             (oss3-dz2 state) dz2
+             (oss3-dx1 state) (- dx0 sq2)
+             (oss3-dy1 state) dy3
+             (oss3-dz1 state) dz2
+             (oss3-dx0 state) (- dx0 1 sq3)
+             (oss3-dy0 state) (- dy0 1 sq3)
+             (oss3-dz0 state) (- dz0 1 sq3)))
     (values)))
 
 (defun open-simplex-3d/in3 (state)
@@ -619,24 +639,30 @@
             (t
              (decf (oss3-dz-ext1 state) 2)
              (incf (oss3-zsv-ext1 state) 2)))))
-    (setf (oss3-dx1 state) (- dx0 1 sq)
-          (oss3-dy1 state) (- dy0 sq)
-          (oss3-dz1 state) (- dz0 sq)
-          (oss3-dx2 state) (- dx0 sq)
-          (oss3-dy2 state) (- dy0 1 sq)
-          (oss3-dz2 state) (oss3-dz1 state)
-          (oss3-dx3 state) (oss3-dx2 state)
-          (oss3-dy3 state) (oss3-dy1 state)
-          (oss3-dz3 state) (- dz0 1 sq)
-          (oss3-dx4 state) (- dx0 1 sq2)
-          (oss3-dy4 state) (- dy0 1 sq2)
-          (oss3-dz4 state) (- dz0 sq2)
-          (oss3-dx5 state) (oss3-dx4 state)
-          (oss3-dy5 state) (- dy0 sq2)
-          (oss3-dz5 state) (- dz0 1 sq2)
-          (oss3-dx6 state) (- dx0 sq2)
-          (oss3-dy6 state) (oss3-dy4 state)
-          (oss3-dz6 state) (oss3-dz5 state))
+    (let ((dy1 (- dy0 sq))
+          (dz1 (- dz0 sq))
+          (dx2 (- dx0 sq))
+          (dx4 (- dx0 1 sq2))
+          (dy4 (- dy0 1 sq2))
+          (dz5 (- dz0 1 sq2)))
+      (psetf (oss3-dx1 state) (- dx0 1 sq)
+             (oss3-dy1 state) dy1
+             (oss3-dz1 state) dz1
+             (oss3-dx2 state) dx2
+             (oss3-dy2 state) (- dy0 1 sq)
+             (oss3-dz2 state) dz1
+             (oss3-dx3 state) dx2
+             (oss3-dy3 state) dy1
+             (oss3-dz3 state) (- dz0 1 sq)
+             (oss3-dx4 state) dx4
+             (oss3-dy4 state) dy4
+             (oss3-dz4 state) (- dz0 sq2)
+             (oss3-dx5 state) dx4
+             (oss3-dy5 state) (- dy0 sq2)
+             (oss3-dz5 state) dz5
+             (oss3-dx6 state) (- dx0 sq2)
+             (oss3-dy6 state) dy4
+             (oss3-dz6 state) dz5))
     (values)))
 
 (u:defun-inline %open-simplex-3d (x y z)
