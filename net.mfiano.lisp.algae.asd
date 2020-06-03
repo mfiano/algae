@@ -39,8 +39,7 @@
     ((:file "uuid")))
    (:module "noise"
     :components
-    ((:file "package")
-     (:file "common")
+    ((:file "common")
      (:file "open-simplex-2d")
      (:file "open-simplex-3d")
      (:file "open-simplex-4d")
@@ -51,4 +50,5 @@
      (:file "simplex-1d")
      (:file "simplex-2d")
      (:file "simplex-3d")
-     (:file "simplex-4d")))))
+     (:file "simplex-4d")
+     (:file "noise")))))

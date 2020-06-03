@@ -1,10 +1,20 @@
-(in-package #:net.mfiano.lisp.algae.noise)
+(in-package #:cl-user)
 
-(u:define-constant +simplex-1d/scale+ 0.395d0)
+(defpackage #:net.mfiano.lisp.algae.noise.simplex-1d
+  (:local-nicknames
+   (#:c #:net.mfiano.lisp.algae.noise.common)
+   (#:u #:net.mfiano.lisp.golden-utils))
+  (:use #:cl)
+  (:export
+   #:sample))
 
-(u:defun-inline %simplex-1d (x)
+(in-package #:net.mfiano.lisp.algae.noise.simplex-1d)
+
+(u:define-constant +scale+ 0.395d0)
+
+(u:defun-inline sample (x)
   (declare (optimize speed)
-           (f50 x))
+           (c:f50 x))
   (flet ((noise (hash x)
            (let* ((s (- 1 (* x x)))
                   (h (logand hash 15))
@@ -18,11 +28,7 @@
            (i2 (1+ i1))
            (x1 (- x i1))
            (x2 (1- x1))
-           (p +permutation+)
-           (n1 (noise (pget p i1) x1))
-           (n2 (noise (pget p i2) x2)))
-      (float (* (+ n1 n2) +simplex-1d/scale+) 1f0))))
-
-(defun simplex-1d (x)
-  (declare (real x))
-  (%simplex-1d (float x 1d0)))
+           (p c:+perlin-permutation+)
+           (n1 (noise (c:pget p i1) x1))
+           (n2 (noise (c:pget p i2) x2)))
+      (float (* (+ n1 n2) +scale+) 1f0))))

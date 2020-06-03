@@ -1,9 +1,21 @@
-(in-package #:net.mfiano.lisp.algae.noise)
+(in-package #:cl-user)
 
-(u:defun-inline %perlin-improved-3d (x y z)
+(defpackage #:net.mfiano.lisp.algae.noise.perlin-improved-3d
+  (:local-nicknames
+   (#:c #:net.mfiano.lisp.algae.noise.common)
+   (#:u #:net.mfiano.lisp.golden-utils))
+  (:use #:cl)
+  (:export
+   #:sample))
+
+(in-package #:net.mfiano.lisp.algae.noise.perlin-improved-3d)
+
+(u:defun-inline sample (x y z)
   (declare (optimize speed)
-           (f50 x y z))
-  (flet ((grad (hash x y z)
+           (c:f50 x y z))
+  (flet ((fade (x)
+           (* x x x (+ (* x (- (* x 6) 15)) 10)))
+         (grad (hash x y z)
            (let* ((h (logand hash 15))
                   (u (if (< h 8) x y))
                   (v (case h
@@ -21,27 +33,26 @@
                (u (fade xf))
                (v (fade yf))
                (w (fade zf))
-               (p +permutation+)
+               (p c:+perlin-permutation+)
                (a (+ (aref p xi) yi))
                (b (+ (aref p (1+ xi)) yi)))
       (float
-       (lerp w
-             (lerp v
-                   (lerp u
-                         (grad (pget p zi a) xf yf zf)
-                         (grad (pget p zi b) (1- xf) yf zf))
-                   (lerp u
-                         (grad (pget p zi (1+ a)) xf (1- yf) zf)
-                         (grad (pget p zi (1+ b)) (1- xf) (1- yf) zf)))
-             (lerp v
-                   (lerp u
-                         (grad (pget p (1+ zi) a) xf yf (1- zf))
-                         (grad (pget p (1+ zi) b) (1- xf) yf (1- zf)))
-                   (lerp u
-                         (grad (pget p (1+ zi) (1+ a)) xf (1- yf) (1- zf))
-                         (grad (pget p zi (1+ b)) (1- xf) (1- yf) (1- zf)))))
+       (u:lerp
+        w
+        (u:lerp
+         v
+         (u:lerp u
+                 (grad (c:pget p zi a) xf yf zf)
+                 (grad (c:pget p zi b) (1- xf) yf zf))
+         (u:lerp u
+                 (grad (c:pget p zi (1+ a)) xf (1- yf) zf)
+                 (grad (c:pget p zi (1+ b)) (1- xf) (1- yf) zf)))
+        (u:lerp
+         v
+         (u:lerp u
+                 (grad (c:pget p (1+ zi) a) xf yf (1- zf))
+                 (grad (c:pget p (1+ zi) b) (1- xf) yf (1- zf)))
+         (u:lerp u
+                 (grad (c:pget p (1+ zi) (1+ a)) xf (1- yf) (1- zf))
+                 (grad (c:pget p zi (1+ b)) (1- xf) (1- yf) (1- zf)))))
        1f0))))
-
-(defun perlin-improved-3d (x y z)
-  (declare (real x y z))
-  (%perlin-improved-3d (float x 1d0) (float y 1d0) (float z 1d0)))

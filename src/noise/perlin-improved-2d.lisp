@@ -1,9 +1,21 @@
-(in-package #:net.mfiano.lisp.algae.noise)
+(in-package #:cl-user)
 
-(u:defun-inline %perlin-improved-2d (x y)
+(defpackage #:net.mfiano.lisp.algae.noise.perlin-improved-2d
+  (:local-nicknames
+   (#:c #:net.mfiano.lisp.algae.noise.common)
+   (#:u #:net.mfiano.lisp.golden-utils))
+  (:use #:cl)
+  (:export
+   #:sample))
+
+(in-package #:net.mfiano.lisp.algae.noise.perlin-improved-2d)
+
+(u:defun-inline sample (x y)
   (declare (optimize speed)
-           (f50 x y))
-  (flet ((grad (hash x y)
+           (c:f50 x y))
+  (flet ((fade (x)
+           (* x x x (+ (* x (- (* x 6) 15)) 10)))
+         (grad (hash x y)
            (let* ((h (logand hash 7))
                   (u (if (< h 4) x y))
                   (v (if (< h 4) y x)))
@@ -15,7 +27,7 @@
                (yi (logand yi 255))
                (u (fade xf))
                (v (fade yf))
-               (p +permutation+)
+               (p c:+perlin-permutation+)
                (a (+ (aref p xi) yi))
                (aa (aref p a))
                (ab (aref p (1+ a)))
@@ -23,15 +35,11 @@
                (ba (aref p b))
                (bb (aref p (1+ b))))
       (float
-       (lerp v
-             (lerp u
-                   (grad (pget p aa) xf yf)
-                   (grad (pget p ba) (1- xf) yf))
-             (lerp u
-                   (grad (pget p ab) xf (1- yf))
-                   (grad (pget p bb) (1- xf) (1- yf))))
+       (u:lerp v
+               (u:lerp u
+                       (grad (c:pget p aa) xf yf)
+                       (grad (c:pget p ba) (1- xf) yf))
+               (u:lerp u
+                       (grad (c:pget p ab) xf (1- yf))
+                       (grad (c:pget p bb) (1- xf) (1- yf))))
        1f0))))
-
-(defun perlin-improved-2d (x y)
-  (declare (real x y))
-  (%perlin-improved-2d (float x 1d0) (float y 1d0)))

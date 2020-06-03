@@ -1,9 +1,20 @@
-(in-package #:net.mfiano.lisp.algae.noise)
+(in-package #:cl-user)
+
+(defpackage #:net.mfiano.lisp.algae.noise.common
+  (:local-nicknames
+   (#:u #:net.mfiano.lisp.golden-utils))
+  (:use #:cl)
+  (:export
+   #:f50
+   #:+perlin-permutation+
+   #:pget))
+
+(in-package #:net.mfiano.lisp.algae.noise.common)
 
 (deftype f50 () '(double-float #.(- (expt 2d0 50)) #.(expt 2d0 50)))
 
 (declaim (type (simple-array u:ub8 (512)) +p+))
-(u:define-constant +permutation+
+(u:define-constant +perlin-permutation+
     (let ((permutation #(151 160 137 91 90 15 131 13 201 95 96 53 194 233 7 225
                          140 36 103 30 69 142 8 99 37 240 21 10 23 190 6 148 247
                          120 234 75 0 26 197 62 94 252 219 203 117 35 11 32 57
@@ -26,16 +37,6 @@
       (replace p permutation :start1 256)
       p)
   :test #'equalp)
-
-(declaim (inline lerp))
-(defun lerp (v a b)
-  (declare (double-float v a b))
-  (+ (* (- 1d0 v) a) (* v b)))
-
-(declaim (inline fade))
-(defun fade (x)
-  (declare (double-float x))
-  (* x x x (+ (* x (- (* x 6) 15)) 10)))
 
 (defmacro pget (table &body (first . rest))
   (if rest

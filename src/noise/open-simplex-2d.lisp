@@ -1,20 +1,30 @@
-(in-package #:net.mfiano.lisp.algae.noise)
+(in-package #:cl-user)
 
-(u:define-constant +open-simplex-2d/stretch+ (/ (1- (/ (sqrt 3d0))) 2))
+(defpackage #:net.mfiano.lisp.algae.noise.open-simplex-2d
+  (:local-nicknames
+   (#:c #:net.mfiano.lisp.algae.noise.common)
+   (#:u #:net.mfiano.lisp.golden-utils))
+  (:use #:cl)
+  (:export
+   #:sample))
 
-(u:define-constant +open-simplex-2d/squish+ (/ (1- (sqrt 3d0)) 2))
+(in-package #:net.mfiano.lisp.algae.noise.open-simplex-2d)
 
-(u:define-constant +open-simplex-2d/scale+ (/ 47d0))
+(u:define-constant +stretch+ (/ (1- (/ (sqrt 3d0))) 2))
 
-(u:define-constant +open-simplex-2d/gradients+
+(u:define-constant +squish+ (/ (1- (sqrt 3d0)) 2))
+
+(u:define-constant +scale+ (/ 47d0))
+
+(u:define-constant +gradients+
     (let ((data '(5 2 2 5 -5 2 -2 5 5 -2 2 -5 -5 -2 -2 -5)))
       (make-array 16 :element-type 'fixnum :initial-contents data))
   :test #'equalp)
 
-(declaim (inline %make-open-simplex-2d-state))
-(defstruct (open-simplex-2d-state
-            (:constructor %make-open-simplex-2d-state)
-            (:conc-name oss2-)
+(declaim (inline %make-state))
+(defstruct (state
+            (:constructor %make-state)
+            (:conc-name nil)
             (:predicate nil)
             (:copier nil))
   (stretch-offset 0d0 :type double-float)
@@ -35,134 +45,114 @@
   (ins 0d0 :type double-float)
   (value 0d0 :type double-float))
 
-(u:defun-inline make-open-simplex-2d-state (x y)
-  (let* ((stretch-offset (* (+ x y) +open-simplex-2d/stretch+))
+(u:defun-inline make-state (x y)
+  (let* ((stretch-offset (* (+ x y) +stretch+))
          (xs (+ x stretch-offset))
          (ys (+ y stretch-offset))
          (xsb (floor xs))
          (ysb (floor ys))
-         (squish-offset (* (+ xsb ysb) +open-simplex-2d/squish+))
+         (squish-offset (* (+ xsb ysb) +squish+))
          (dx0 (- x (+ xsb squish-offset)))
          (dy0 (- y (+ ysb squish-offset)))
          (xins (- xs xsb))
          (yins (- ys ysb)))
-    (declare (f50 xs ys))
-    (%make-open-simplex-2d-state
-     :xsb xsb
-     :ysb ysb
-     :dx0 dx0
-     :dy0 dy0
-     :dx1 (- dx0 1 +open-simplex-2d/squish+)
-     :dy1 (- dy0 +open-simplex-2d/squish+)
-     :dx2 (- dx0 +open-simplex-2d/squish+)
-     :dy2 (- dy0 1 +open-simplex-2d/squish+)
-     :xins xins
-     :yins yins
-     :ins (+ xins yins))))
+    (declare (c:f50 xs ys))
+    (%make-state :xsb xsb
+                 :ysb ysb
+                 :dx0 dx0
+                 :dy0 dy0
+                 :dx1 (- dx0 1 +squish+)
+                 :dy1 (- dy0 +squish+)
+                 :dx2 (- dx0 +squish+)
+                 :dy2 (- dy0 1 +squish+)
+                 :xins xins
+                 :yins yins
+                 :ins (+ xins yins))))
 
-(u:defun-inline open-simplex-2d/extrapolate (xsb ysb dx dy)
-  (let ((index (logand (pget +permutation+ ysb xsb) 14)))
-    (+ (* (aref +open-simplex-2d/gradients+ index) dx)
-       (* (aref +open-simplex-2d/gradients+ (1+ index)) dy))))
+(u:defun-inline extrapolate (xsb ysb dx dy)
+  (let ((index (logand (c:pget c:+perlin-permutation+ ysb xsb) 14)))
+    (+ (* (aref +gradients+ index) dx)
+       (* (aref +gradients+ (1+ index)) dy))))
 
-(u:defun-inline open-simplex-2d/contribute (state dx dy xsb ysb)
+(u:defun-inline contribute (state dx dy xsb ysb)
   (let ((a (- 2 (* dx dx) (* dy dy))))
     (when (plusp a)
-      (incf (oss2-value state)
-            (* (expt a 4) (open-simplex-2d/extrapolate xsb ysb dx dy))))
+      (incf (value state)
+            (* (expt a 4) (extrapolate xsb ysb dx dy))))
     (values)))
 
-(u:defun-inline open-simplex-2d/contribute1 (state)
-  (let ((xsb (oss2-xsb state))
-        (ysb (oss2-ysb state)))
-    (open-simplex-2d/contribute state
-                                (oss2-dx1 state)
-                                (oss2-dy1 state)
-                                (1+ xsb)
-                                ysb)
-    (open-simplex-2d/contribute state
-                                (oss2-dx2 state)
-                                (oss2-dy2 state)
-                                xsb
-                                (1+ ysb))))
+(u:defun-inline contribute1 (state)
+  (let ((xsb (xsb state))
+        (ysb (ysb state)))
+    (contribute state (dx1 state) (dy1 state) (1+ xsb) ysb)
+    (contribute state (dx2 state) (dy2 state) xsb (1+ ysb))))
 
-(u:defun-inline open-simplex-2d/contribute2 (state)
-  (open-simplex-2d/contribute state
-                              (oss2-dx0 state)
-                              (oss2-dy0 state)
-                              (oss2-xsb state)
-                              (oss2-ysb state))
-  (open-simplex-2d/contribute state
-                              (oss2-dx-ext state)
-                              (oss2-dy-ext state)
-                              (oss2-xsv-ext state)
-                              (oss2-ysv-ext state)))
+(u:defun-inline contribute2 (state)
+  (contribute state (dx0 state) (dy0 state) (xsb state) (ysb state))
+  (contribute state (dx-ext state) (dy-ext state) (xsv-ext state)
+              (ysv-ext state)))
 
-(u:defun-inline open-simplex-2d/in1 (state)
-  (let ((xins (oss2-xins state))
-        (yins (oss2-yins state))
-        (zins (- 1 (oss2-ins state)))
-        (xsb (oss2-xsb state))
-        (ysb (oss2-ysb state))
-        (dx0 (oss2-dx0 state))
-        (dy0 (oss2-dy0 state))
-        (sq2 #.(* +open-simplex-2d/squish+ 2)))
+(u:defun-inline in1 (state)
+  (let ((xins (xins state))
+        (yins (yins state))
+        (zins (- 1 (ins state)))
+        (xsb (xsb state))
+        (ysb (ysb state))
+        (dx0 (dx0 state))
+        (dy0 (dy0 state))
+        (sq2 #.(* +squish+ 2)))
     (if (or (> zins xins) (> zins yins))
         (if (> xins yins)
-            (psetf (oss2-xsv-ext state) (1+ xsb)
-                   (oss2-ysv-ext state) (1- ysb)
-                   (oss2-dx-ext state) (1- dx0)
-                   (oss2-dy-ext state) (1+ dy0))
-            (psetf (oss2-xsv-ext state) (1- xsb)
-                   (oss2-ysv-ext state) (1+ ysb)
-                   (oss2-dx-ext state) (1+ dx0)
-                   (oss2-dy-ext state) (1- dy0)))
-        (psetf (oss2-xsv-ext state) (1+ xsb)
-               (oss2-ysv-ext state) (1+ ysb)
-               (oss2-dx-ext state) (- dx0 1 sq2)
-               (oss2-dy-ext state) (- dy0 1 sq2)))
+            (psetf (xsv-ext state) (1+ xsb)
+                   (ysv-ext state) (1- ysb)
+                   (dx-ext state) (1- dx0)
+                   (dy-ext state) (1+ dy0))
+            (psetf (xsv-ext state) (1- xsb)
+                   (ysv-ext state) (1+ ysb)
+                   (dx-ext state) (1+ dx0)
+                   (dy-ext state) (1- dy0)))
+        (psetf (xsv-ext state) (1+ xsb)
+               (ysv-ext state) (1+ ysb)
+               (dx-ext state) (- dx0 1 sq2)
+               (dy-ext state) (- dy0 1 sq2)))
     (values)))
 
-(u:defun-inline open-simplex-2d/in2 (state)
-  (let ((xins (oss2-xins state))
-        (yins (oss2-yins state))
-        (zins (- 2 (oss2-ins state)))
-        (xsb (oss2-xsb state))
-        (ysb (oss2-ysb state))
-        (dx0 (oss2-dx0 state))
-        (dy0 (oss2-dy0 state))
-        (sq2 #.(* +open-simplex-2d/squish+ 2)))
+(u:defun-inline in2 (state)
+  (let ((xins (xins state))
+        (yins (yins state))
+        (zins (- 2 (ins state)))
+        (xsb (xsb state))
+        (ysb (ysb state))
+        (dx0 (dx0 state))
+        (dy0 (dy0 state))
+        (sq2 #.(* +squish+ 2)))
     (if (or (< zins xins) (< zins yins))
         (if (> xins yins)
-            (psetf (oss2-xsv-ext state) (+ xsb 2)
-                   (oss2-ysv-ext state) ysb
-                   (oss2-dx-ext state) (- dx0 2 sq2)
-                   (oss2-dy-ext state) (- dy0 sq2))
-            (psetf (oss2-xsv-ext state) xsb
-                   (oss2-ysv-ext state) (+ ysb 2)
-                   (oss2-dx-ext state) (- dx0 sq2)
-                   (oss2-dy-ext state) (- dy0 2 sq2)))
-        (psetf (oss2-dx-ext state) dx0
-               (oss2-dy-ext state) dy0
-               (oss2-xsv-ext state) xsb
-               (oss2-ysv-ext state) ysb))
-    (incf (oss2-xsb state))
-    (incf (oss2-ysb state))
-    (psetf (oss2-dx0 state) (- dx0 1 sq2)
-           (oss2-dy0 state) (- dy0 1 sq2))
+            (psetf (xsv-ext state) (+ xsb 2)
+                   (ysv-ext state) ysb
+                   (dx-ext state) (- dx0 2 sq2)
+                   (dy-ext state) (- dy0 sq2))
+            (psetf (xsv-ext state) xsb
+                   (ysv-ext state) (+ ysb 2)
+                   (dx-ext state) (- dx0 sq2)
+                   (dy-ext state) (- dy0 2 sq2)))
+        (psetf (dx-ext state) dx0
+               (dy-ext state) dy0
+               (xsv-ext state) xsb
+               (ysv-ext state) ysb))
+    (incf (xsb state))
+    (incf (ysb state))
+    (psetf (dx0 state) (- dx0 1 sq2)
+           (dy0 state) (- dy0 1 sq2))
     (values)))
 
-(u:defun-inline %open-simplex-2d (x y)
+(u:defun-inline sample (x y)
   (declare (optimize speed)
            (double-float x y))
-  (let ((state (make-open-simplex-2d-state x y)))
-    (open-simplex-2d/contribute1 state)
-    (if (<= (oss2-ins state) 1)
-        (open-simplex-2d/in1 state)
-        (open-simplex-2d/in2 state))
-    (open-simplex-2d/contribute2 state)
-    (float (* (oss2-value state) +open-simplex-2d/scale+) 1f0)))
-
-(defun open-simplex-2d (x y)
-  (declare (real x y))
-  (%open-simplex-2d (float x 1d0) (float y 1d0)))
+  (let ((state (make-state x y)))
+    (contribute1 state)
+    (if (<= (ins state) 1)
+        (in1 state)
+        (in2 state))
+    (contribute2 state)
+    (float (* (value state) +scale+) 1f0)))
