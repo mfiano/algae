@@ -27,4 +27,4 @@
                (p c:+perlin-permutation+)
                (a (aref p xi))
                (b (aref p (1+ xi))))
-      (float (u:lerp u (grad a x) (grad b (1- x))) 1f0))))
+      (float (* (u:lerp u (grad a xf) (grad b (1- xf))) 0.25) 1f0))))
