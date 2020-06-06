@@ -31,9 +31,9 @@
    (:module "convolution-kernel"
     :components
     ((:file "convolution-kernel")))
-   (:module "rng-pool"
+   (:module "rng"
     :components
-    ((:file "rng-pool")))
+    ((:file "rng")))
    (:module "uuid"
     :components
     ((:file "uuid")))

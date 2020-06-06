@@ -3,7 +3,7 @@
 ;;;; A simple pool of random number generators that can be seeded with a
 ;;;; consistent state across hardware and Lisp implementations.
 
-(defpackage #:net.mfiano.lisp.algae.rng-pool
+(defpackage #:net.mfiano.lisp.algae.rng
   (:local-nicknames
    (#:glob #:global-vars)
    (#:u #:net.mfiano.lisp.golden-utils))
@@ -11,18 +11,19 @@
   (:shadow #:float)
   (:export
    #:bool
+   #:delete-generator
    #:die
    #:element
+   #:find-generator
    #:float
-   #:get-seed
    #:int
    #:make-generator
-   #:make-pool
-   #:reset-pool
+   #:seed
+   #:seed-phrase
    #:shuffle
    #:uint))
 
-(in-package #:net.mfiano.lisp.algae.rng-pool)
+(in-package #:net.mfiano.lisp.algae.rng)
 
 (u:define-constant +dictionary+
     #("gaming" "shopper" "moistness" "truth" "renounce" "retry" "compound"
@@ -1130,179 +1131,117 @@
       "student" "clean" "dispute" "chief" "pounce" "sapling" "unsavory")
   :test #'equalp)
 
-(glob:define-global-var =pool= nil)
-
-(defclass pool ()
-  ((%seed :reader seed
-          :initarg :seed)
-   (%generators :reader generators
-                :initform (u:dict #'eq))))
+(glob:define-global-var =generators= (u:dict #'eq))
 
 (defclass generator ()
-  ((%kernel :reader kernel
+  ((%id :reader id
+        :initarg :id)
+   (%kernel :reader kernel
             :initarg :kernel)
    (%seed :reader seed
-          :initarg :seed)))
+          :initarg :seed)
+   (%seed-phrase :reader seed-phrase
+                 :initarg :seed-phrase)))
 
-(define-condition generator-error (error)
-  ((%id :reader id
-        :initarg :id)))
+(defun generate-seed-phrase ()
+  (let (words)
+    (setf *random-state* (make-random-state t))
+    (dotimes (i 5)
+      (push (u:random-elt +dictionary+) words))
+    (format nil "~{~a~^-~}" words)))
 
-(define-condition pool-not-initialized (generator-error) ()
-  (:report
-   (lambda (condition stream)
-     (declare (ignore condition))
-     (format stream "Generator pool is not yet initialized."))))
+(defun generate-inherited-seed-phrase (id)
+  (let (words)
+    (dotimes (i 5)
+      (push (element id +dictionary+) words))
+    (format nil "~{~a~^-~}" words)))
 
-(define-condition generator-not-found (generator-error) ()
-  (:report
-   (lambda (condition stream)
-     (format stream "No generator with id ~s." (id condition)))))
-
-(define-condition invalid-generator-id (generator-error) ()
-  (:report
-   (lambda (condition stream)
-     (format stream "Invalid generator id: ~s." (id condition)))))
-
-(define-condition invalid-range ()
-  ((%lower-bound :reader lower-bound
-                 :initarg :min)
-   (%upper-bound :reader upper-bound
-                 :initarg :max))
-  (:report
-   (lambda (condition stream)
-     (format stream "Invalid range: [min: ~s, max: ~s].~%~
-                     Lower bound can not be larger than upper bound."
-             (lower-bound condition)
-             (upper-bound condition)))))
-
-(defgeneric make-seed (source))
-
-(defmethod make-seed ((source pool))
-  (let ((low (uint :master 0 (1- (expt 2 32)) nil))
-        (high (uint :master 0 (1- (expt 2 32)) nil)))
-    (logior (ash high 32) low)))
-
-(defmethod make-seed ((source string))
+(defun make-seed (phrase)
   (ldb (byte 128 64)
        (ironclad:octets-to-integer
         (ironclad:produce-digest
          (ironclad:update-digest
           (ironclad:make-digest :md5)
-          (ironclad:ascii-string-to-byte-array source))))))
+          (ironclad:ascii-string-to-byte-array phrase))))))
 
-(defmethod make-seed ((source null))
-  (let (words)
-    (setf *random-state* (make-random-state t))
-    (dotimes (i 5)
-      (push (u:random-elt +dictionary+) words))
-    (let ((phrase (format nil "~{~a~^-~}" words)))
-      (values (make-seed phrase)
-              phrase))))
-
-(defun %make-generator (id &optional seed)
-  (let* ((seed (make-seed seed))
+(defun %make-generator (id seed-phrase)
+  (when (keywordp id)
+    (error "Generator ID must not be a keyword symbol."))
+  (let* ((seed (make-seed seed-phrase))
          (generator (make-instance 'generator
+                                   :id id
                                    :kernel (pcg:make-pcg :seed seed)
-                                   :seed seed)))
-    (setf (u:href (generators =pool=) id) generator)))
+                                   :seed seed
+                                   :seed-phrase seed-phrase)))
+    (setf (u:href =generators= id) generator)
+    generator))
 
-(defun make-generator (id seed)
-  (check-type seed string)
-  (cond
-    ((null =pool=)
-     (error 'pool-not-initialized))
-    ((eq id :master)
-     (error 'invalid-generator-id :id id))
-    (t (%make-generator id seed))))
+(defun make-generator (id &optional source)
+  (etypecase source
+    (null
+     (%make-generator id (generate-seed-phrase)))
+    (symbol
+     (%make-generator id (generate-inherited-seed-phrase source)))
+    (string
+     (%make-generator id source))))
 
-(defun make-pool (seed)
-  (let ((seed (or seed (nth-value 1 (make-seed seed)))))
-    (setf =pool= (make-instance 'pool :seed seed))
-    (%make-generator :master seed)
-    (%make-generator :default)))
+(defun delete-generator (id)
+  (remhash id =generators=))
 
-(defun reset-pool ()
-  (setf =pool= nil))
+(defun find-generator (id)
+  (or (u:href =generators= id)
+      (error "Generator ~s not found." id)))
 
-(defun get-seed (id)
-  (if =pool=
-      (u:if-let ((generator (u:href (generators =pool=) id)))
-        (seed generator)
-        (error 'generator-not-found :id id))
-      (error 'pool-not-initialized)))
-
-(u:fn-> bool (keyword &optional single-float) boolean)
+(u:fn-> bool (symbol &optional single-float) boolean)
 (defun bool (id &optional (probability 0.5f0))
   (declare (optimize speed))
-  (if =pool=
-      (u:if-let ((generator (u:href (generators =pool=) id)))
-        (< (the single-float (pcg:pcg-random (kernel generator) 1f0))
-           probability)
-        (error 'generator-not-found :id id))
-      (error 'pool-not-initialized)))
+  (let ((generator (find-generator id)))
+    (< (the single-float (pcg:pcg-random (kernel generator) 1f0))
+       probability)))
 
-(u:fn-> int (keyword u:b32 u:b32 &optional boolean) fixnum)
+(u:fn-> int (symbol u:b32 u:b32 &optional boolean) fixnum)
 (defun int (id min max &optional (inclusive t))
   (declare (optimize speed))
   (unless (<= min max)
     (error 'invalid-range :min min :max max))
-  (if =pool=
-      (u:if-let ((generator (u:href (generators =pool=) id)))
-        (values (pcg:pcg-random (kernel generator) min max inclusive))
-        (error 'generator-not-found :id id))
-      (error 'pool-not-initialized)))
+  (let ((generator (find-generator id)))
+    (values (pcg:pcg-random (kernel generator) min max inclusive))))
 
-(u:fn-> uint (keyword u:ub32 u:ub32 &optional boolean) fixnum)
+(u:fn-> uint (symbol u:ub32 u:ub32 &optional boolean) fixnum)
 (defun uint (id min max &optional (inclusive t))
   (declare (optimize speed))
   (unless (<= min max)
     (error 'invalid-range :min min :max max))
-  (if =pool=
-      (u:if-let ((generator (u:href (generators =pool=) id)))
-        (values (pcg:pcg-random (kernel generator) min max inclusive))
-        (error 'generator-not-found :id id))
-      (error 'pool-not-initialized)))
+  (let ((generator (find-generator id)))
+    (values (pcg:pcg-random (kernel generator) min max inclusive))))
 
-(u:fn-> float (keyword single-float single-float) single-float)
+(u:fn-> float (symbol single-float single-float) single-float)
 (defun float (id min max)
   (declare (optimize speed))
   (unless (<= min max)
     (error 'invalid-range :min min :max max))
-  (if =pool=
-      (u:if-let ((generator (u:href (generators =pool=) id)))
-        (values (pcg:pcg-random (kernel generator) min max))
-        (error 'generator-not-found :id id))
-      (error 'pool-not-initialized)))
+  (let ((generator (find-generator id)))
+    (values (pcg:pcg-random (kernel generator) min max))))
 
-(u:fn-> element (keyword list) atom)
-(defun element (id list)
-  (declare (optimize speed))
-  (if =pool=
-      (u:if-let ((generator (u:href (generators =pool=) id))
-                 (length (list-length list)))
-        (when (plusp length)
-          (elt list (pcg:pcg-random (kernel generator) length)))
-        (error 'generator-not-found :id id))
-      (error 'pool-not-initialized)))
+(u:fn-> element (symbol sequence) atom)
+(defun element (id sequence)
+  (let ((generator (find-generator id))
+        (length (length sequence)))
+    (when (plusp length)
+      (elt sequence (pcg:pcg-random (kernel generator) length)))))
 
-(u:fn-> shuffle (keyword list) list)
-(defun shuffle (id list)
-  (declare (optimize speed))
-  (if =pool=
-      (loop :with result = (copy-list list)
-            :with end = (1- (list-length result))
-            :for i :from (1- end) :downto 0
-            :do (rotatef (elt result i)
-                         (elt result (+ i (int id 0 (- end i)))))
-            :finally (return result))
-      (error 'pool-not-initialized)))
+(u:fn-> shuffle (symbol sequence) sequence)
+(defun shuffle (id sequence)
+  (loop :with result = (copy-seq sequence)
+        :with end = (1- (length result))
+        :for i :from (1- end) :downto 0
+        :do (rotatef (elt result i)
+                     (elt result (+ i (int id 0 (- end i)))))
+        :finally (return result)))
 
-(u:fn-> die (keyword u:ub16 &key (:modifier u:ub16) (:count u:ub16)) u:ub32)
+(u:fn-> die (symbol u:ub16 &key (:modifier u:ub16) (:count u:ub16)) u:ub32)
 (defun die (id sides &key (modifier 0) (count 1))
   (declare (optimize speed))
-  (if =pool=
-      (loop :repeat count
-            :sum (int id 1 sides) :into result :of-type u:ub32
-            :finally (return (+ result modifier)))
-      (error 'pool-not-initialized)))
+  (loop :repeat count
+        :sum (int id 1 sides) :into result :of-type u:ub32
+        :finally (return (+ result modifier))))
