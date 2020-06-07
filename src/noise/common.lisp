@@ -2,18 +2,20 @@
 
 (defpackage #:net.mfiano.lisp.algae.noise.common
   (:local-nicknames
+   (#:rng #:net.mfiano.lisp.algae.rng)
    (#:u #:net.mfiano.lisp.golden-utils))
   (:use #:cl)
   (:export
-   #:f50
    #:+perlin-permutation+
-   #:pget))
+   #:f50
+   #:make-sampler
+   #:pget
+   #:sampler))
 
 (in-package #:net.mfiano.lisp.algae.noise.common)
 
 (deftype f50 () '(double-float #.(- (expt 2d0 50)) #.(expt 2d0 50)))
 
-(declaim (type (simple-array u:ub8 (512)) +p+))
 (u:define-constant +perlin-permutation+
     (let ((permutation #(151 160 137 91 90 15 131 13 201 95 96 53 194 233 7 225
                          140 36 103 30 69 142 8 99 37 240 21 10 23 190 6 148 247
@@ -37,6 +39,21 @@
       (replace p permutation :start1 256)
       p)
   :test #'equalp)
+
+(defclass sampler ()
+  ((%seed :accessor seed
+          :initarg :seed)))
+
+(defmethod initialize-instance :after ((instance sampler) &key)
+  (let ((seed (rng:seed-phrase (rng:find-generator 'rng))))
+    (setf (seed instance) seed)))
+
+(defgeneric make-sampler (type seed)
+  (:method :before (type seed)
+    (rng:make-generator 'rng seed))
+  (:method (type seed)
+    (declare (ignore seed))
+    (error "Unknown sampler type: ~s." type)))
 
 (defmacro pget (table &body (first . rest))
   (if rest

@@ -2,6 +2,7 @@
 
 (defpackage #:net.mfiano.lisp.algae.noise
   (:local-nicknames
+   (#:c #:net.mfiano.lisp.algae.noise.common)
    (#:os2 #:net.mfiano.lisp.algae.noise.open-simplex-2d)
    (#:os3 #:net.mfiano.lisp.algae.noise.open-simplex-3d)
    (#:os4 #:net.mfiano.lisp.algae.noise.open-simplex-4d)
@@ -51,33 +52,9 @@
 
 (in-package #:net.mfiano.lisp.algae.noise)
 
-(defun make-sampler (type)
-  (lambda (x &optional (y 0d0) (z 0d0) (w 0d0))
-    (case type
-      (:perlin-1d
-       (p1:sample x))
-      (:perlin-2d
-       (p2:sample x y))
-      (:perlin-3d
-       (p3:sample x y z))
-      (:perlin-4d
-       (p4:sample x y z w))
-      (:simplex-1d
-       (s1:sample x))
-      (:simplex-2d
-       (s2:sample x y))
-      (:simplex-3d
-       (s3:sample x y z))
-      (:simplex-4d
-       (s4:sample x y z w))
-      (:open-simplex-2d
-       (os2:sample x y))
-      (:open-simplex-3d
-       (os3:sample x y z))
-      (:open-simplex-4d
-       (os4:sample x y z w))
-      (t
-       (error "~s is not a valid sampler type." type)))))
+(defun make-sampler (type &optional (seed "default"))
+  (check-type seed string)
+  (c:make-sampler type seed))
 
 (defun sample (sampler &rest args)
   (apply sampler (mapcar (lambda (x) (float x 1d0)) args)))

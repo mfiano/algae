@@ -3,6 +3,7 @@
 (defpackage #:net.mfiano.lisp.algae.noise.open-simplex-4d
   (:local-nicknames
    (#:c #:net.mfiano.lisp.algae.noise.common)
+   (#:rng #:net.mfiano.lisp.algae.rng)
    (#:u #:net.mfiano.lisp.golden-utils))
   (:use #:cl)
   (:export
@@ -31,12 +32,17 @@
       (make-array 256 :element-type 'fixnum :initial-contents data))
   :test #'equalp)
 
+(defclass sampler (c:sampler)
+  ((%table :reader table
+           :initarg :table)))
+
 (declaim (inline %make-state))
 (defstruct (state
             (:constructor %make-state)
             (:conc-name nil)
             (:predicate nil)
             (:copier nil))
+  sampler
   (stretch-offset 0d0 :type double-float)
   (xsb 0 :type fixnum)
   (ysb 0 :type fixnum)
@@ -117,7 +123,7 @@
   (ins 0d0 :type double-float)
   (value 0d0 :type double-float))
 
-(u:defun-inline make-state (x y z w)
+(u:defun-inline make-state (sampler x y z w)
   (let* ((stretch-offset (* (+ x y z w) +stretch+))
          (xs (+ x stretch-offset))
          (ys (+ y stretch-offset))
@@ -137,7 +143,8 @@
          (zins (- zs zsb))
          (wins (- ws wsb)))
     (declare (c:f50 xs ys zs ws))
-    (%make-state :xsb xsb
+    (%make-state :sampler sampler
+                 :xsb xsb
                  :ysb ysb
                  :zsb zsb
                  :wsb wsb
@@ -151,8 +158,9 @@
                  :wins wins
                  :ins (+ xins yins zins wins))))
 
-(u:defun-inline extrapolate (xsb ysb zsb wsb dx dy dz dw)
-  (let ((index (logand (c:pget c:+perlin-permutation+ wsb zsb ysb xsb) 252)))
+(u:defun-inline extrapolate (sampler xsb ysb zsb wsb dx dy dz dw)
+  (let* ((table (the (simple-array u:ub8 (512)) (table sampler)))
+         (index (logand (c:pget table wsb zsb ysb xsb) 252)))
     (+ (* (aref +gradients+ index) dx)
        (* (aref +gradients+ (1+ index)) dy)
        (* (aref +gradients+ (+ index 2)) dz)
@@ -163,7 +171,7 @@
     (when (plusp a)
       (incf (value state)
             (* (expt a 4)
-               (extrapolate xsb ysb zsb wsb dx dy dz dw))))
+               (extrapolate (sampler state) xsb ysb zsb wsb dx dy dz dw))))
     (values)))
 
 (defun contribute1 (state)
@@ -1476,10 +1484,10 @@
              (dw10 state) dw7))
     (values)))
 
-(defun sample (x y z w)
+(defun sample (sampler x y z w)
   (declare (optimize speed)
            (double-float x y z w))
-  (let ((state (make-state x y z w)))
+  (let ((state (make-state sampler x y z w)))
     (cond
       ((<= (ins state) 1)
        (in1 state)
@@ -1495,3 +1503,10 @@
        (contribute4 state)))
     (contribute5 state)
     (float (* (value state) +scale+) 1f0)))
+
+(defmethod c:make-sampler ((type (eql :open-simplex-4d)) seed)
+  (declare (ignore seed))
+  (let* ((table (rng:shuffle 'c::rng c:+perlin-permutation+))
+         (sampler (make-instance 'sampler :table table)))
+    (lambda (x &optional (y 0d0) (z 0d0) (w 0d0))
+      (sample sampler x y z w))))
