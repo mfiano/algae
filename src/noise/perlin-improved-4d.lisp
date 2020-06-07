@@ -11,11 +11,7 @@
 
 (in-package #:net.mfiano.lisp.algae.noise.perlin-improved-4d)
 
-(defclass sampler (c:sampler)
-  ((%table :reader table
-           :initarg :table)))
-
-(u:defun-inline sample (sampler x y z w)
+(u:defun-inline sample (table x y z w)
   (declare (optimize speed)
            (c:f50 x y z w))
   (flet ((fade (x)
@@ -48,7 +44,7 @@
                (ft (fade yf))
                (fr (fade zf))
                (fq (fade wf))
-               (p (the (simple-array u:ub8 (512)) (table sampler))))
+               (p (the (simple-array u:ub8 (512)) table)))
       (float
        (u:lerp
         fs
@@ -90,9 +86,7 @@
                   (grad (c:pget p xi1 yi1 zi1 wi1) xf-1 yf-1 zf-1 wf-1)))))
        1f0))))
 
-(defmethod c:make-sampler ((type (eql :perlin-4d)) seed)
-  (declare (ignore seed))
-  (let* ((table (rng:shuffle 'c::rng c:+perlin-permutation+))
-         (sampler (make-instance 'sampler :table table)))
+(defmethod c::%make-sampler-func ((type (eql :perlin-4d)))
+  (let ((table (rng:shuffle 'c::rng c:+perlin-permutation+)))
     (lambda (x &optional (y 0d0) (z 0d0) (w 0d0))
-      (sample sampler x y z w))))
+      (sample table x y z w))))

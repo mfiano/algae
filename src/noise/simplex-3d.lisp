@@ -17,11 +17,7 @@
 
 (u:define-constant +scale+ 32d0)
 
-(defclass sampler (c:sampler)
-  ((%table :reader table
-           :initarg :table)))
-
-(u:defun-inline sample (sampler x y z)
+(u:defun-inline sample (table x y z)
   (declare (optimize speed)
            (c:f50 x y z))
   (flet ((get-simplex (x y z)
@@ -65,7 +61,7 @@
                (x4 (+ (1- x1) (* +unskew-factor+ 3)))
                (y4 (+ (1- y1) (* +unskew-factor+ 3)))
                (z4 (+ (1- z1) (* +unskew-factor+ 3)))
-               (p (the (simple-array u:ub8 (512)) (table sampler)))
+               (p (the (simple-array u:ub8 (512)) table))
                (g1 (c:pget p i j k))
                (g2 (c:pget p (+ i i1) (+ j j1) (+ k k1)))
                (g3 (c:pget p (+ i i2)  (+ j j2) (+ k k2)))
@@ -76,10 +72,8 @@
                (n4 (noise g4 x4 y4 z4)))
       (float (* (+ n1 n2 n3 n4) +scale+) 1f0))))
 
-(defmethod c:make-sampler ((type (eql :simplex-3d)) seed)
-  (declare (ignore seed))
-  (let* ((table (rng:shuffle 'c::rng c:+perlin-permutation+))
-         (sampler (make-instance 'sampler :table table)))
-    (lambda (x &optional (y 0d0) (z 0d0) (w 0d0))
+(defmethod c::%make-sampler-func ((type (eql :simplex-3d)))
+  (let ((table (rng:shuffle 'c::rng c:+perlin-permutation+)))
+    (lambda (x &optional (y 0d0) (z 0d0) w)
       (declare (ignore w))
-      (sample sampler x y z))))
+      (sample table x y z))))

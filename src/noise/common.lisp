@@ -8,7 +8,6 @@
   (:export
    #:+perlin-permutation+
    #:f50
-   #:make-sampler
    #:pget
    #:sampler))
 
@@ -40,46 +39,13 @@
       p)
   :test #'equalp)
 
-(defclass sampler ()
-  ((%seed :accessor seed
-          :initarg :seed)))
+(defclass sampler () ())
 
-(defmethod initialize-instance :after ((instance sampler) &key)
-  (let ((seed (rng:seed-phrase (rng:find-generator 'rng))))
-    (setf (seed instance) seed)))
-
-(defgeneric make-sampler (type seed)
-  (:method :before (type seed)
-    (rng:make-generator 'rng seed))
-  (:method (type seed)
-    (declare (ignore seed))
+(defgeneric %make-sampler-func (type)
+  (:method (type)
     (error "Unknown sampler type: ~s." type)))
 
 (defmacro pget (table &body (first . rest))
   (if rest
       `(aref ,table (logand (+ ,first (pget ,table ,@rest)) 255))
       `(aref ,table (logand ,first 255))))
-
-(defun test (file type dimensions &key (width 1024) (height 1024) (scale 32))
-  (flet ((make-func (name)
-           (case dimensions
-             (0 (lambda (x y) (declare (ignore x y)) (funcall name)))
-             (1 (lambda (x y) (declare (ignore y)) (funcall name x)))
-             (2 name)
-             (t (apply #'u:curry name
-                       (make-list (- dimensions 2) :initial-element 0))))))
-    (loop :with png = (make-instance 'zpng:png
-                                     :color-type :grayscale
-                                     :width width
-                                     :height height)
-          :with data = (zpng:data-array png)
-          :with name = (u:symbolicate
-                        type '#:- (u:make-keyword dimensions) '#:d)
-          :for y :below height
-          :do (loop :for x :below width
-                    :for noise = (funcall (make-func name)
-                                          (/ x (float scale 1d0))
-                                          (/ y (float scale 1d0)))
-                    :for byte = (max 0 (min 255 (floor (* (1+ noise) 128))))
-                    :do (setf (aref data y x 0) byte))
-          :finally (zpng:write-png png file))))

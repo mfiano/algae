@@ -22,17 +22,13 @@
       (make-array 16 :element-type 'fixnum :initial-contents data))
   :test #'equalp)
 
-(defclass sampler (c:sampler)
-  ((%table :reader table
-           :initarg :table)))
-
 (declaim (inline %make-state))
 (defstruct (state
             (:constructor %make-state)
             (:conc-name nil)
             (:predicate nil)
             (:copier nil))
-  sampler
+  (table c:+perlin-permutation+ :type (simple-array u:ub8 (512)))
   (stretch-offset 0d0 :type double-float)
   (xsb 0 :type fixnum)
   (ysb 0 :type fixnum)
@@ -51,7 +47,7 @@
   (ins 0d0 :type double-float)
   (value 0d0 :type double-float))
 
-(u:defun-inline make-state (sampler x y)
+(u:defun-inline make-state (table x y)
   (let* ((stretch-offset (* (+ x y) +stretch+))
          (xs (+ x stretch-offset))
          (ys (+ y stretch-offset))
@@ -63,7 +59,7 @@
          (xins (- xs xsb))
          (yins (- ys ysb)))
     (declare (c:f50 xs ys))
-    (%make-state :sampler sampler
+    (%make-state :table table
                  :xsb xsb
                  :ysb ysb
                  :dx0 dx0
@@ -76,9 +72,8 @@
                  :yins yins
                  :ins (+ xins yins))))
 
-(u:defun-inline extrapolate (sampler xsb ysb dx dy)
-  (let* ((table (the (simple-array u:ub8 (512)) (table sampler)))
-         (index (logand (c:pget table ysb xsb) 14)))
+(u:defun-inline extrapolate (table xsb ysb dx dy)
+  (let ((index (logand (c:pget table ysb xsb) 14)))
     (+ (* (aref +gradients+ index) dx)
        (* (aref +gradients+ (1+ index)) dy))))
 
@@ -86,7 +81,7 @@
   (let ((a (- 2 (* dx dx) (* dy dy))))
     (when (plusp a)
       (incf (value state)
-            (* (expt a 4) (extrapolate (sampler state) xsb ysb dx dy))))
+            (* (expt a 4) (extrapolate (table state) xsb ysb dx dy))))
     (values)))
 
 (u:defun-inline contribute1 (state)
@@ -154,10 +149,10 @@
            (dy0 state) (- dy0 1 sq2))
     (values)))
 
-(u:defun-inline sample (sampler x y)
+(u:defun-inline sample (table x y)
   (declare (optimize speed)
            (double-float x y))
-  (let ((state (make-state sampler x y)))
+  (let ((state (make-state table x y)))
     (contribute1 state)
     (if (<= (ins state) 1)
         (in1 state)
@@ -165,10 +160,8 @@
     (contribute2 state)
     (float (* (value state) +scale+) 1f0)))
 
-(defmethod c:make-sampler ((type (eql :open-simplex-2d)) seed)
-  (declare (ignore seed))
-  (let* ((table (rng:shuffle 'c::rng c:+perlin-permutation+))
-         (sampler (make-instance 'sampler :table table)))
-    (lambda (x &optional (y 0d0) (z 0d0) (w 0d0))
+(defmethod c::%make-sampler-func ((type (eql :open-simplex-2d)))
+  (let ((table (rng:shuffle 'c::rng c:+perlin-permutation+)))
+    (lambda (x &optional (y 0d0) z w)
       (declare (ignore z w))
-      (sample sampler x y))))
+      (sample table x y))))

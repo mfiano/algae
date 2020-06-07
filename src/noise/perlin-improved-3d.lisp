@@ -11,11 +11,7 @@
 
 (in-package #:net.mfiano.lisp.algae.noise.perlin-improved-3d)
 
-(defclass sampler (c:sampler)
-  ((%table :reader table
-           :initarg :table)))
-
-(u:defun-inline sample (sampler x y z)
+(u:defun-inline sample (table x y z)
   (declare (optimize speed)
            (c:f50 x y z))
   (flet ((fade (x)
@@ -38,7 +34,7 @@
                (u (fade xf))
                (v (fade yf))
                (w (fade zf))
-               (p (the (simple-array u:ub8 (512)) (table sampler)))
+               (p (the (simple-array u:ub8 (512)) table))
                (a (+ (aref p xi) yi))
                (b (+ (aref p (1+ xi)) yi)))
       (float
@@ -62,10 +58,8 @@
                  (grad (c:pget p zi (1+ b)) (1- xf) (1- yf) (1- zf)))))
        1f0))))
 
-(defmethod c:make-sampler ((type (eql :perlin-3d)) seed)
-  (declare (ignore seed))
-  (let* ((table (rng:shuffle 'c::rng c:+perlin-permutation+))
-         (sampler (make-instance 'sampler :table table)))
-    (lambda (x &optional (y 0d0) (z 0d0) (w 0d0))
+(defmethod c::%make-sampler-func ((type (eql :perlin-3d)))
+  (let* ((table (rng:shuffle 'c::rng c:+perlin-permutation+)))
+    (lambda (x &optional (y 0d0) (z 0d0) w)
       (declare (ignore w))
-      (sample sampler x y z))))
+      (sample table x y z))))

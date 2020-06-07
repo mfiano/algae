@@ -3,17 +3,7 @@
 (defpackage #:net.mfiano.lisp.algae.noise
   (:local-nicknames
    (#:c #:net.mfiano.lisp.algae.noise.common)
-   (#:os2 #:net.mfiano.lisp.algae.noise.open-simplex-2d)
-   (#:os3 #:net.mfiano.lisp.algae.noise.open-simplex-3d)
-   (#:os4 #:net.mfiano.lisp.algae.noise.open-simplex-4d)
-   (#:p1 #:net.mfiano.lisp.algae.noise.perlin-improved-1d)
-   (#:p2 #:net.mfiano.lisp.algae.noise.perlin-improved-2d)
-   (#:p3 #:net.mfiano.lisp.algae.noise.perlin-improved-3d)
-   (#:p4 #:net.mfiano.lisp.algae.noise.perlin-improved-4d)
-   (#:s1 #:net.mfiano.lisp.algae.noise.simplex-1d)
-   (#:s2 #:net.mfiano.lisp.algae.noise.simplex-2d)
-   (#:s3 #:net.mfiano.lisp.algae.noise.simplex-3d)
-   (#:s4 #:net.mfiano.lisp.algae.noise.simplex-4d)
+   (#:rng #:net.mfiano.lisp.algae.rng)
    (#:u #:net.mfiano.lisp.golden-utils))
   (:use #:cl)
   (:shadow
@@ -54,7 +44,8 @@
 
 (defun make-sampler (type &optional (seed "default"))
   (check-type seed string)
-  (c:make-sampler type seed))
+  (rng:make-generator 'c::rng seed)
+  (c::%make-sampler-func type))
 
 (defun sample (sampler &rest args)
   (apply sampler (mapcar (lambda (x) (float x 1d0)) args)))
