@@ -35,7 +35,7 @@
                (xi1 (logand (1+ xi) 255))
                (yi1 (logand (1+ yi) 255))
                (zi1 (logand (1+ zi) 255))
-               (wi1 (1+ wi))
+               (wi1 (logand (1+ wi) 255))
                (xf-1 (1- xf))
                (yf-1 (1- yf))
                (zf-1 (1- zf))
