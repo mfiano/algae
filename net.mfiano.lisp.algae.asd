@@ -51,4 +51,7 @@
      (:file "simplex-2d")
      (:file "simplex-3d")
      (:file "simplex-4d")
-     (:file "noise")))))
+     (:file "noise")))
+   (:module "index-allocator"
+    :components
+    ((:file "index-allocator")))))
