@@ -16,15 +16,11 @@
   :serial t
   :components
   ((:file "package")
-   (:module "doubly-linked-list"
+   (:module "data-structures"
     :components
-    ((:file "doubly-linked-list")))
-   (:module "avl-tree"
-    :components
-    ((:file "avl-tree")))
-   (:module "quad-tree"
-    :components
-    ((:file "quad-tree")))
+    ((:file "avl-tree")
+     (:file "doubly-linked-list")
+     (:file "quad-tree")))
    (:module "tile-grid"
     :components
     ((:file "tile-grid")))

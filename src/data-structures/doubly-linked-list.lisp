@@ -2,7 +2,7 @@
 
 ;;;; An implementation of the doubly linked list data structure.
 
-(defpackage #:net.mfiano.lisp.algae.doubly-linked-list
+(defpackage #:net.mfiano.lisp.algae.data-structures.doubly-linked-list
   (:local-nicknames
    (#:u #:net.mfiano.lisp.golden-utils))
   (:use #:cl)
@@ -27,7 +27,7 @@
    #:tail
    #:value))
 
-(in-package #:net.mfiano.lisp.algae.doubly-linked-list)
+(in-package #:net.mfiano.lisp.algae.data-structures.doubly-linked-list)
 
 (defstruct (list
             (:constructor %make-list)
