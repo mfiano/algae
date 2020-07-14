@@ -20,6 +20,8 @@
     :components
     ((:file "avl-tree")
      (:file "doubly-linked-list")
+     (:file "identifier-pool-v1")
+     (:file "identifier-pool-v2")
      (:file "quad-tree")))
    (:module "tile-grid"
     :components
@@ -50,4 +52,5 @@
      (:file "noise")))
    (:module "index-allocator"
     :components
-    ((:file "index-allocator")))))
+    ((:file "index-allocator")
+     (:file "index-allocator2")))))
