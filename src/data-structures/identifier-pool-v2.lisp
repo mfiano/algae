@@ -1,13 +1,16 @@
 (in-package #:cl-user)
 
 ;;;; An identifier pool, for lack of a better name. This package is able to
-;;;; allocate monotonically increasing identifiers (integers) in such a way that
-;;;; previously deallocated identifiers are available to be reclaimed by the
-;;;; generator the next time one is allocated. It does so in a space-efficient
-;;;; manner, without the need for the storage of a list of deallocated
-;;;; identifiers. It does so by keeping deallocated identifiers around and
-;;;; modifying their IDs to build a sort of implicit linked list. That is, when
-;;;; an identifier is marked for deletion, the following occurs:
+;;;; generate increasing identifiers (integers) in such a way that previously
+;;;; deallocated identifiers are available to be reclaimed by the generator the
+;;;; next time one is allocated. Essentially, it solves the "ABA Problem":
+;;;; https://en.wikipedia.org/wiki/ABA_problem
+
+;;;; It does so in a space-efficient manner, without the need for the storage of
+;;;; a list of deallocated identifiers. It does this by keeping deallocated
+;;;; identifiers around and modifying their data on deletion to build a sort of
+;;;; implicit linked list. That is, when an identifier is marked for deletion,
+;;;; the following occurs:
 
 ;;;; * The packed version portion of its data is incremented.
 
