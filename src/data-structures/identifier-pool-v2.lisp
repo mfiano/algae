@@ -16,7 +16,7 @@
 
 ;;;; * The packed ID portion of its data is set to the integer stored in the
 ;;;;   pool's NEXT slot (NEXT can be thought of as the head of the implicit
-;;;;   linked list). If NEXT is null, then instead, the all the bits of the ID
+;;;;   linked list). If NEXT is null, then instead, all of the bits of the ID
 ;;;;   are set. #xFFFFF represents the "invalid" ID.
 
 ;;;; * NEXT is set to the ID portion of its data.
@@ -34,9 +34,11 @@
    (#:u #:net.mfiano.lisp.golden-utils))
   (:use #:cl)
   (:shadow
+   #:count
    #:map)
   (:export
    #:active-p
+   #:count
    #:free
    #:generate
    #:make-pool
@@ -59,7 +61,8 @@
             (:predicate nil)
             (:copier nil))
   store
-  next)
+  next
+  (count 0 :type u:ub32))
 
 (declaim (inline unpack))
 (u:fn-> unpack (u:ub32) (values u:ub32 u:ub32))
@@ -84,6 +87,7 @@
 (defun generate (pool)
   (let ((store (store pool))
         (next (next pool)))
+    (incf (count pool))
     (if next
         (u:mvlet ((id version (unpack (aref store next))))
           (if (= id +id-mask+)
@@ -95,13 +99,16 @@
           identifier))))
 
 (defun free (pool identifier)
-  (let* ((store (store pool))
-         (id (unpack identifier))
-         (version (nth-value 1 (unpack (aref store id)))))
-    (setf (aref store id) (pack (or (next pool) +id-mask+)
-                                (logand (1+ version) +version-mask+))
-          (next pool) id)
-    (values)))
+  (let ((store (store pool))
+        (index (unpack identifier)))
+    (when (< index (length store))
+      (u:mvlet ((id version (unpack (aref store index))))
+        (when (= index id)
+          (setf (aref store id) (pack (or (next pool) +id-mask+)
+                                      (logand (1+ version) +version-mask+))
+                (next pool) id)
+          (decf (count pool))
+          t)))))
 
 (defun active-p (pool identifier)
   (let ((store (store pool))
