@@ -17,7 +17,7 @@
 ;;;; * The packed ID portion of its data is set to the integer stored in the
 ;;;;   pool's FREE-HEAD slot (FREE-HEAD can be thought of as the head of the
 ;;;;   implicit linked list). If FREE-HEAD is null, then instead, all of the
-;;;;   bits of the ID are set. #xFFFFF represents the "invalid" ID.
+;;;;   bits of the ID are set. #xFFFFFF represents the "invalid" ID.
 
 ;;;; * FREE-HEAD is set to the ID portion of its data.
 
