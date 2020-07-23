@@ -20,8 +20,7 @@
     :components
     ((:file "avl-tree")
      (:file "doubly-linked-list")
-     (:file "identifier-pool-v1")
-     (:file "identifier-pool-v2")
+     (:file "identifier-pool")
      (:file "quad-tree")))
    (:module "tile-grid"
     :components
