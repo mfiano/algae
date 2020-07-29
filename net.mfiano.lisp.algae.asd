@@ -21,7 +21,8 @@
     ((:file "avl-tree")
      (:file "doubly-linked-list")
      (:file "identifier-pool")
-     (:file "quad-tree")))
+     (:file "quad-tree")
+     (:file "slot-map")))
    (:module "tile-grid"
     :components
     ((:file "tile-grid")))
