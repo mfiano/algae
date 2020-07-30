@@ -82,7 +82,7 @@
     (when (= fill-pointer length)
       (let ((data (adjust-array
                    data
-                   (max 0 (min (* length 2) most-positive-fixnum))
+                   (max 16 (min (* length 2) most-positive-fixnum))
                    :initial-element (initial-element dynamic-array))))
         (setf (data dynamic-array) data)))
     (locally (declare (optimize (safety 0)))
