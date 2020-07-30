@@ -33,20 +33,22 @@
             (:predicate nil)
             (:copier nil))
   (data (make-array 0 :adjustable t :fill-pointer 0) :type vector)
-  (slots (da:make-array :capacity (expt 10 7)) :type da:dynamic-array)
-  (reverse-map (da:make-array :capacity (expt 10 7)) :type da:dynamic-array)
+  (slots (da:make-array) :type da:dynamic-array)
+  (reverse-map (da:make-array) :type da:dynamic-array)
   (free-head nil :type (or null u:ub24))
   (free-tail nil :type (or null u:ub24)))
 
 (u:define-printer (slot-map stream)
   (format stream "~s" (data slot-map)))
 
-(defun make-slot-map (&key (size 128) (data-type 'u:ub32))
-  (let ((data (make-array size
+(defun make-slot-map (&key (capacity 128) (data-type 'u:ub32))
+  (let ((data (make-array capacity
                           :adjustable t
                           :fill-pointer 0
                           :element-type data-type)))
-    (%make-slot-map :data data)))
+    (%make-slot-map :data data
+                    :slots (da:make-array :capacity capacity)
+                    :reverse-map (da:make-array :capacity capacity))))
 
 (u:fn-> pack (u:ub24 u:ub32) fixnum)
 (u:defun-inline pack (id version)
