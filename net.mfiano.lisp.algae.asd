@@ -20,6 +20,7 @@
     :components
     ((:file "avl-tree")
      (:file "doubly-linked-list")
+     (:file "dynamic-array")
      (:file "identifier-pool")
      (:file "quad-tree")
      (:file "slot-map")))
