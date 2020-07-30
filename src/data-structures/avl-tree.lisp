@@ -22,9 +22,10 @@
 
 (in-package #:net.mfiano.lisp.algae.data-structures.avl-tree)
 
-(defstruct (tree (:constructor %make-tree)
-                 (:predicate nil)
-                 (:copier nil))
+(defstruct (tree
+            (:constructor %make-tree)
+            (:predicate nil)
+            (:copier nil))
   sentinel
   root
   item-type
@@ -32,12 +33,10 @@
   (sorter #'< :type function)
   (hash-test #'eql :type function))
 
-(u:define-printer (tree stream :identity t :type nil)
-  (format stream "TREE"))
-
-(defstruct (node (:constructor %make-node)
-                 (:predicate nil)
-                 (:copier nil))
+(defstruct (node
+            (:constructor %make-node)
+            (:predicate nil)
+            (:copier nil))
   tree
   key
   data
@@ -47,12 +46,14 @@
   (height 0 :type fixnum)
   (balance-factor 0 :type fixnum))
 
+(u:define-printer (tree stream :identity t :type nil)
+  (format stream "TREE"))
+
 (u:define-printer (node stream :identity t :type nil)
   (format stream "NODE"))
 
 (u:fn-> node-p ((or node null)) (or node null))
-(declaim (inline node-p))
-(defun node-p (node)
+(u:defun-inline node-p (node)
   (declare (optimize speed))
   (unless (and node (eq node (tree-sentinel (node-tree node))))
     node))

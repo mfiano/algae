@@ -59,16 +59,14 @@
   free-head
   (count 0 :type u:ub24))
 
-(declaim (inline unpack))
 (u:fn-> unpack (fixnum) (values u:ub24 u:ub32))
-(defun unpack (identifier)
+(u:defun-inline unpack (identifier)
   (declare (optimize speed))
   (values (ldb (byte +id-bits+ 0) identifier)
           (ldb (byte +version-bits+ +id-bits+) identifier)))
 
-(declaim (inline pack))
 (u:fn-> pack (u:ub24 u:ub32) fixnum)
-(defun pack (id version)
+(u:defun-inline pack (id version)
   (declare (optimize speed))
   (dpb version (byte +version-bits+ +id-bits+)
        (dpb id (byte +id-bits+ 0) 0)))

@@ -202,8 +202,7 @@
           (export ',remover-name))))))
 
 (u:fn-> resolve (kernel u:b32 u:b32) (or tg:cell null))
-(declaim (inline resolve))
-(defun resolve (kernel x y)
+(u:defun-inline resolve (kernel x y)
   (declare (optimize speed))
   (%resolve (grid kernel) (x kernel) (y kernel) x y))
 
@@ -267,8 +266,7 @@
             (push new items)))))))
 
 (u:fn-> origin (kernel) (or tg:cell null))
-(declaim (inline origin))
-(defun origin (kernel)
+(u:defun-inline origin (kernel)
   (declare (optimize speed))
   (%resolve (grid kernel) (x kernel) (y kernel) 0 0))
 

@@ -27,7 +27,7 @@
 
 (in-package #:net.mfiano.lisp.algae.data-structures.dynamic-array)
 
-(declaim (inline data fill-pointer))
+(declaim (inline %make-array))
 (defstruct (dynamic-array
             (:constructor %make-array)
             (:conc-name nil)

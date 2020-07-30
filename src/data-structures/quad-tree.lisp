@@ -43,8 +43,7 @@
 (u:define-printer (tree stream :type nil :identity t)
   (format stream "QUAD-TREE"))
 
-(declaim (inline %make-tree))
-(defun %make-tree (boundary depth max-depth max-capacity)
+(u:defun-inline %make-tree (boundary depth max-depth max-capacity)
   (declare (optimize speed))
   (%%make-tree :boundary boundary
                :depth depth
@@ -74,13 +73,12 @@
          (<= (- bcx bex) (+ acx aex))
          (<= (- bcy bey) (+ acy aey)))))
 
-(declaim (inline sub-divided-p))
-(defun sub-divided-p (tree)
+(u:defun-inline sub-divided-p (tree)
+  (declare (optimize speed))
   (when (nw tree)
     t))
 
-(declaim (inline %insert))
-(defun %insert (tree point)
+(u:defun-inline %insert (tree point)
   (or (insert (nw tree) point)
       (insert (ne tree) point)
       (insert (sw tree) point)

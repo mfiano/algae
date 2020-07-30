@@ -77,8 +77,7 @@
     grid))
 
 (u:fn-> get-cell (grid fixnum fixnum) (or cell null))
-(declaim (inline get-cell))
-(defun get-cell (grid x y)
+(u:defun-inline get-cell (grid x y)
   (declare (optimize speed))
   (let ((width (width grid))
         (height (height grid)))
@@ -166,8 +165,7 @@
         whole)))
 
 (u:fn-> cell-empty-p ((or cell null)) boolean)
-(declaim (inline cell-empty-p))
-(defun cell-empty-p (cell)
+(u:defun-inline cell-empty-p (cell)
   (declare (optimize speed))
   (or (null cell) (zerop (value cell))))
 
