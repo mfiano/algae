@@ -77,22 +77,31 @@
                t))
       (%check (tree-root tree) (tree-sorter tree)))))
 
+(u:fn-> make-node (tree t) node)
+(defun make-node (tree item)
+  (declare (optimize speed))
+  (let ((sentinel (tree-sentinel tree))
+        (node (%make-node :tree tree
+                          :key (when item (funcall (tree-key tree) item))
+                          :data (u:dict (tree-hash-test tree) item item))))
+    (setf (node-left node) sentinel
+          (node-right node) sentinel)
+    node))
+
 (u:fn-> make-tree (&key (:item-type symbol)
                         (:key function)
                         (:sort function)
                         (:hash-test function))
         tree)
-(defun make-tree (&key item-type (key #'identity) (sort #'<)
-                    (hash-test #'eql))
+(defun make-tree (&key item-type (key #'identity) (sort #'<) (hash-test #'eql))
   (declare (optimize speed))
   (unless item-type
     (error "Must specify :ITEM-TYPE denoting the type of items stored in the ~
             tree."))
-  (let* ((tree (%make-tree
-                :item-type item-type
-                :key key
-                :sorter sort
-                :hash-test hash-test))
+  (let* ((tree (%make-tree :item-type item-type
+                           :key key
+                           :sorter sort
+                           :hash-test hash-test))
          (sentinel (make-node tree nil)))
     (setf (tree-sentinel tree) sentinel
           (node-left sentinel) sentinel
@@ -100,18 +109,6 @@
           (tree-root tree) sentinel)
     (clrhash (node-data (tree-sentinel tree)))
     tree))
-
-(u:fn-> make-node (tree t) node)
-(defun make-node (tree item)
-  (declare (optimize speed))
-  (let ((sentinel (tree-sentinel tree))
-        (node (%make-node
-               :tree tree
-               :key (when item (funcall (tree-key tree) item))
-               :data (u:dict (tree-hash-test tree) item item))))
-    (setf (node-left node) sentinel
-          (node-right node) sentinel)
-    node))
 
 (u:fn-> walk (tree function) null)
 (defun walk (tree func)
