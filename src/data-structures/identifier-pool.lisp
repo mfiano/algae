@@ -26,6 +26,7 @@
 
 (defpackage #:net.mfiano.lisp.algae.identifier-pool
   (:local-nicknames
+   (#:da #:net.mfiano.lisp.algae.data-structures.dynamic-array)
    (#:u #:net.mfiano.lisp.golden-utils))
   (:use #:cl)
   (:shadow
@@ -55,7 +56,7 @@
             (:conc-name nil)
             (:predicate nil)
             (:copier nil))
-  store
+  (store (da:make-array) :type da:dynamic-array)
   free-head
   (count 0 :type u:ub24))
 
@@ -71,48 +72,54 @@
   (dpb version (byte +version-bits+ +id-bits+)
        (dpb id (byte +id-bits+ 0) 0)))
 
-(defun make-pool (&key (size 128))
-  (%make-pool :store (make-array size
-                                 :adjustable t
-                                 :fill-pointer 0
-                                 :element-type 'fixnum)))
+(defun make-pool (&key (capacity 128))
+  (%make-pool :store (da:make-array :capacity capacity)))
 
+(u:fn-> generate (pool) fixnum)
 (defun generate (pool)
+  (declare (optimize speed))
   (let ((store (store pool))
         (free-head (free-head pool)))
     (incf (count pool))
     (if free-head
-        (u:mvlet ((id version (unpack (aref store free-head))))
+        (u:mvlet ((id version (unpack (da:aref store free-head))))
           (setf (free-head pool) (if (= id +id-mask+) nil id)
-                (aref store free-head) (pack free-head version)))
-        (let ((identifier (pack (length store) 0)))
-          (vector-push-extend identifier store)
+                (da:aref store free-head) (pack free-head version)))
+        (let ((identifier (pack (da:length store) 0)))
+          (da:push store identifier)
           identifier))))
 
+(u:fn-> free (pool fixnum) boolean)
 (defun free (pool identifier)
+  (declare (optimize speed))
   (let ((store (store pool))
         (index (unpack identifier)))
-    (when (< index (length store))
-      (u:mvlet ((id version (unpack (aref store index))))
+    (when (< index (da:length store))
+      (u:mvlet ((id version (unpack (da:aref store index))))
         (when (= index id)
-          (setf (aref store id) (pack (or (free-head pool) +id-mask+)
-                                      (logand (1+ version) +version-mask+))
+          (setf (da:aref store id) (pack (or (free-head pool) +id-mask+)
+                                         (logand (1+ version) +version-mask+))
                 (free-head pool) id)
           (decf (count pool))
           t)))))
 
+(u:fn-> active-p (pool fixnum) boolean)
 (defun active-p (pool identifier)
+  (declare (optimize speed))
   (let ((store (store pool))
         (index (logand identifier +id-mask+)))
-    (and (< index (length store))
-         (= (unpack (aref store index)) identifier))))
+    (and (< index (da:length store))
+         (= (unpack (da:aref store index)) identifier))))
 
+(u:fn-> map (pool function) null)
 (defun map (pool func)
-  (let ((store (store pool)))
+  (declare (optimize speed))
+  (let* ((store (store pool))
+         (length (da:length store)))
     (if (free-head pool)
-        (loop :for i :below (length store)
-              :for identifier = (aref store i)
+        (loop :for i :below length
+              :for identifier = (da:aref store i)
               :when (= (logand identifier +id-mask+) i)
                 :do (funcall func identifier))
-        (dotimes (i (length store))
-          (funcall func (aref store i))))))
+        (dotimes (i length)
+          (funcall func (da:aref store i))))))
