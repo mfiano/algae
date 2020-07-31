@@ -19,6 +19,7 @@
    (:module "data-structures"
     :components
     ((:file "avl-tree")
+     (:file "binary-search-tree")
      (:file "doubly-linked-list")
      (:file "dynamic-array")
      (:file "identifier-pool")
