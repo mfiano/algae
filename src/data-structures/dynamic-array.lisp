@@ -56,13 +56,19 @@
 
 (u:fn-> aref (dynamic-array fixnum) fixnum)
 (u:defun-inline aref (dynamic-array index)
-  (declare (optimize speed (safety 0)))
-  (cl:aref (data dynamic-array) index))
+  (declare (optimize speed))
+  (if (< index (fill-pointer dynamic-array))
+      (locally (declare (optimize (safety 0)))
+        (cl:aref (data dynamic-array) index))
+      (error "Index out of bounds.")))
 
 (u:fn-> (setf aref) (fixnum dynamic-array fixnum) fixnum)
 (u:defun-inline (setf aref) (value dynamic-array index)
-  (declare (optimize speed (safety 0)))
-  (setf (cl:aref (data dynamic-array) index) value))
+  (declare (optimize speed))
+  (if (< index (fill-pointer dynamic-array))
+      (locally (declare (optimize (safety 0)))
+        (setf (cl:aref (data dynamic-array) index) value))
+      (error "Index out of bounds.")))
 
 (u:fn-> pop (dynamic-array) fixnum)
 (u:defun-inline pop (dynamic-array)
