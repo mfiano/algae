@@ -60,25 +60,6 @@
   (unless (and node (eq node (tree-sentinel (node-tree node))))
     node))
 
-(u:fn-> valid-p (tree) boolean)
-(defun valid-p (tree)
-  (declare (optimize speed))
-  (let ((previous nil))
-    (labels ((%check (node sorter)
-               (declare (function sorter))
-               (when (node-p node)
-                 (when (or (null (%check (node-left node) sorter))
-                           (and previous
-                                (funcall sorter
-                                         (node-key node)
-                                         (node-key previous))))
-                   (return-from %check))
-                 (setf previous node)
-                 (return-from %check
-                   (%check (node-right node) sorter)))
-               t))
-      (%check (tree-root tree) (tree-sorter tree)))))
-
 (u:fn-> make-node (tree t) node)
 (defun make-node (tree item)
   (declare (optimize speed))
@@ -111,6 +92,25 @@
           (tree-root tree) sentinel)
     (clrhash (node-data (tree-sentinel tree)))
     tree))
+
+(u:fn-> valid-p (tree) boolean)
+(defun valid-p (tree)
+  (declare (optimize speed))
+  (let ((previous nil))
+    (labels ((%check (node sorter)
+               (declare (function sorter))
+               (when (node-p node)
+                 (when (or (null (%check (node-left node) sorter))
+                           (and previous
+                                (funcall sorter
+                                         (node-key node)
+                                         (node-key previous))))
+                   (return-from %check))
+                 (setf previous node)
+                 (return-from %check
+                   (%check (node-right node) sorter)))
+               t))
+      (%check (tree-root tree) (tree-sorter tree)))))
 
 (u:fn-> %walk/pre-order (node function) null)
 (defun %walk/pre-order (node func)
