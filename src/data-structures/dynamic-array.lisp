@@ -19,6 +19,7 @@
    #:push)
   (:export
    #:aref
+   #:copy
    #:dynamic-array
    #:length
    #:make-array
@@ -49,6 +50,13 @@
     (%make-array :data data
                  :initial-element initial-element
                  :fill-pointer size)))
+
+(u:fn-> copy (dynamic-array) dynamic-array)
+(defun copy (dynamic-array)
+  (declare (optimize speed))
+  (%make-array :data (u:copy-array (data dynamic-array))
+               :initial-element (initial-element dynamic-array)
+               :fill-pointer (fill-pointer dynamic-array)))
 
 (u:fn-> length (dynamic-array) fixnum)
 (u:defun-inline length (dynamic-array)
