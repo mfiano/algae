@@ -4,7 +4,6 @@
 
 (defpackage #:net.mfiano.lisp.algae.data-structures.sparse-set
   (:local-nicknames
-   (#:da #:net.mfiano.lisp.algae.data-structures.dynamic-array)
    (#:u #:net.mfiano.lisp.golden-utils))
   (:use #:cl)
   (:shadow
