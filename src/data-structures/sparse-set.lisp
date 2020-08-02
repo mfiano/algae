@@ -1,0 +1,104 @@
+(in-package #:cl-user)
+
+;;;; An implementation of the sparse set data structure.
+
+(defpackage #:net.mfiano.lisp.algae.data-structures.sparse-set
+  (:local-nicknames
+   (#:da #:net.mfiano.lisp.algae.data-structures.dynamic-array)
+   (#:u #:net.mfiano.lisp.golden-utils))
+  (:use #:cl)
+  (:shadow
+   #:delete
+   #:find
+   #:length
+   #:map)
+  (:export
+   #:copy
+   #:clear
+   #:delete
+   #:find
+   #:insert
+   #:length
+   #:map))
+
+(in-package #:net.mfiano.lisp.algae.data-structures.sparse-set)
+
+(defstruct (sparse-set
+            (:constructor %make-sparse-set)
+            (:conc-name nil)
+            (:predicate nil)
+            (:copier nil))
+  (dense (make-array 0 :element-type 'u:ub32) :type (simple-array u:ub32 (*)))
+  (sparse (make-array 0 :element-type 'u:ub32) :type (simple-array u:ub32 (*)))
+  (%length 0 :type fixnum))
+
+(u:define-printer (sparse-set stream)
+  (format stream "~a" (subseq (dense sparse-set) 0 (%length sparse-set))))
+
+(defun make-sparse-set (&key (size 128))
+  (%make-sparse-set :dense (make-array size
+                                       :element-type 'u:ub32
+                                       :initial-element 0)
+                    :sparse (make-array size
+                                        :element-type 'u:ub32
+                                        :initial-element 0)))
+
+(u:fn-> copy (sparse-set) sparse-set)
+(defun copy (sparse-set)
+  (declare (optimize speed))
+  (%make-sparse-set :dense (copy-seq (dense sparse-set))
+                    :sparse (copy-seq (sparse sparse-set))
+                    :%length (%length sparse-set)))
+
+(u:fn-> insert (sparse-set u:ub32) boolean)
+(defun insert (sparse-set value)
+  (declare (optimize speed))
+  (let* ((length (%length sparse-set))
+         (dense (dense sparse-set))
+         (sparse (sparse sparse-set))
+         (a (aref sparse value)))
+    (when (or (>= a length)
+              (/= (aref dense a) value))
+      (setf (aref sparse value) length
+            (aref dense length) value)
+      (incf (%length sparse-set))
+      t)))
+
+(u:fn-> delete (sparse-set u:ub32) boolean)
+(defun delete (sparse-set value)
+  (declare (optimize speed))
+  (let* ((length (1- (%length sparse-set)))
+         (dense (dense sparse-set))
+         (sparse (sparse sparse-set))
+         (a (aref sparse value)))
+    (when (and (<= a length)
+               (= (aref dense a) value))
+      (let ((end (aref dense length)))
+        (setf (%length sparse-set) length
+              (aref dense a) end
+              (aref sparse end) a)
+        t))))
+
+(u:fn-> find (sparse-set u:ub32) boolean)
+(defun find (sparse-set value)
+  (declare (optimize speed))
+  (let ((a (aref (sparse sparse-set) value)))
+    (and (< a (%length sparse-set))
+         (= (aref (dense sparse-set) a) value))))
+
+(u:fn-> clear (sparse-set) (values))
+(defun clear (sparse-set)
+  (declare (optimize speed))
+  (setf (%length sparse-set) 0)
+  (values))
+
+(u:fn-> length (sparse-set) u:ub32)
+(u:defun-inline length (sparse-set)
+  (declare (optimize speed))
+  (%length sparse-set))
+
+(u:fn-> map (sparse-set function) null)
+(defun map (sparse-set func)
+  (declare (optimize speed))
+  (dotimes (i (%length sparse-set))
+    (funcall func (aref (dense sparse-set) i))))

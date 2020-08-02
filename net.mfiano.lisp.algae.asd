@@ -24,7 +24,8 @@
      (:file "dynamic-array")
      (:file "identifier-pool")
      (:file "quad-tree")
-     (:file "slot-map")))
+     (:file "slot-map")
+     (:file "sparse-set")))
    (:module "tile-grid"
     :components
     ((:file "tile-grid")))
