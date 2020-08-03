@@ -37,8 +37,10 @@
    #:count
    #:free
    #:generate
+   #:id
    #:make-pool
-   #:map))
+   #:map
+   #:version))
 
 (in-package #:net.mfiano.lisp.algae.data-structures.identifier-pool)
 
@@ -71,6 +73,16 @@
   (declare (optimize speed))
   (dpb version (byte +version-bits+ +id-bits+)
        (dpb id (byte +id-bits+ 0) 0)))
+
+(u:fn-> id (fixnum) u:ub24)
+(u:defun-inline id (identifier)
+  (declare (optimize speed))
+  (nth-value 0 (unpack identifier)))
+
+(u:fn-> version (fixnum) u:ub32)
+(u:defun-inline version (identifier)
+  (declare (optimize speed))
+  (nth-value 1 (unpack identifier)))
 
 (defun make-pool (&key (capacity 128))
   (%make-pool :store (da:make-array :capacity capacity)))
