@@ -17,6 +17,7 @@
    #:delete
    #:find
    #:insert
+   #:make-slot-map
    #:map-keys
    #:map-values))
 
