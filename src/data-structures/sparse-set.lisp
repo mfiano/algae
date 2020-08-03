@@ -18,6 +18,7 @@
    #:find
    #:insert
    #:length
+   #:make-sparse-set
    #:map))
 
 (in-package #:net.mfiano.lisp.algae.data-structures.sparse-set)
