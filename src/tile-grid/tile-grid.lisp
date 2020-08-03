@@ -1,6 +1,6 @@
 (in-package #:cl-user)
 
-;;;; A simple tile  grid implementation.
+;;;; A simple tile grid implementation.
 ;;;; Presents a grid object which has a width and height, and a 2-dimensional
 ;;;; array of cells. Cells have X and Y coordinates, as well as a bitfield of
 ;;;; various user-definable properties that can be added/removed with an
