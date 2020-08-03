@@ -32,6 +32,16 @@
    (:module "convolution-kernel"
     :components
     ((:file "convolution-kernel")))
+   (:module "grid"
+    :components
+    ((:file "package")
+     (:file "grid")
+     (:file "quad")
+     (:file "quad-4-way")
+     (:file "quad-8-way")
+     (:file "hex")
+     (:file "hex-rows")
+     (:file "hex-columns")))
    (:module "rng"
     :components
     ((:file "rng")))
