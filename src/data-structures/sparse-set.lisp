@@ -28,8 +28,8 @@
             (:conc-name nil)
             (:predicate nil)
             (:copier nil))
-  (dense (make-array 0 :element-type 'u:ub32) :type (simple-array u:ub32 (*)))
-  (sparse (make-array 0 :element-type 'u:ub32) :type (simple-array u:ub32 (*)))
+  (dense (make-array 0 :element-type 'fixnum) :type (simple-array fixnum (*)))
+  (sparse (make-array 0 :element-type 'fixnum) :type (simple-array fixnum (*)))
   (%length 0 :type fixnum))
 
 (u:define-printer (sparse-set stream)
@@ -37,11 +37,11 @@
 
 (defun make-sparse-set (&key (size 128))
   (%make-sparse-set :dense (make-array size
-                                       :element-type 'u:ub32
+                                       :element-type 'fixnum
                                        :initial-element 0)
                     :sparse (make-array size
-                                        :element-type 'u:ub32
-                                        :initial-element 0)))
+                                        :element-type 'fixnum
+                                        :initial-element most-positive-fixnum)))
 
 (u:fn-> copy (sparse-set) sparse-set)
 (defun copy (sparse-set)
@@ -50,7 +50,7 @@
                     :sparse (copy-seq (sparse sparse-set))
                     :%length (%length sparse-set)))
 
-(u:fn-> insert (sparse-set u:ub32) boolean)
+(u:fn-> insert (sparse-set fixnum) boolean)
 (defun insert (sparse-set value)
   (declare (optimize speed))
   (let* ((length (%length sparse-set))
@@ -64,7 +64,7 @@
       (incf (%length sparse-set))
       t)))
 
-(u:fn-> delete (sparse-set u:ub32) boolean)
+(u:fn-> delete (sparse-set fixnum) boolean)
 (defun delete (sparse-set value)
   (declare (optimize speed))
   (let* ((length (1- (%length sparse-set)))
@@ -79,7 +79,7 @@
               (aref sparse end) a)
         t))))
 
-(u:fn-> find (sparse-set u:ub32) boolean)
+(u:fn-> find (sparse-set fixnum) boolean)
 (defun find (sparse-set value)
   (declare (optimize speed))
   (let ((a (aref (sparse sparse-set) value)))
@@ -92,7 +92,7 @@
   (setf (%length sparse-set) 0)
   (values))
 
-(u:fn-> length (sparse-set) u:ub32)
+(u:fn-> length (sparse-set) fixnum)
 (u:defun-inline length (sparse-set)
   (declare (optimize speed))
   (%length sparse-set))
