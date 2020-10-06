@@ -62,4 +62,7 @@
      (:file "simplex-2d")
      (:file "simplex-3d")
      (:file "simplex-4d")
-     (:file "noise")))))
+     (:file "noise")))
+   (:module "spline"
+    :components
+    ((:file "cubic-bezier")))))
