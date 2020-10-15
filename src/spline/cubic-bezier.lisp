@@ -13,6 +13,7 @@
   (:use #:cl)
   (:export
    #:add-points
+   #:collect-handle-segments
    #:collect-points
    #:collect-segments
    #:evaluate
@@ -130,12 +131,21 @@
       (dm4:*v4 (dm4:* (aref geometry index) +matrix+)
                (dv4:vec (* x x x) (* x x) x 1))))))
 
-(defun collect-points (curve count &key even-spacing)
+(defun collect-points (spline count &key even-spacing)
   (loop :for i :below count
-        :collect (evaluate curve (/ i (1- count)) :even-spacing even-spacing)))
+        :collect (evaluate spline (/ i (1- count)) :even-spacing even-spacing)))
 
-(defun collect-segments (curve count &key even-spacing)
+(defun collect-segments (spline count &key even-spacing)
   (loop :for i :from 1 :to count
-        :for p1 = (evaluate curve 0 :even-spacing even-spacing) :then p2
-        :for p2 = (evaluate curve (/ i count) :even-spacing even-spacing)
+        :for p1 = (evaluate spline 0 :even-spacing even-spacing) :then p2
+        :for p2 = (evaluate spline (/ i count) :even-spacing even-spacing)
         :collect (list p1 p2)))
+
+(defun collect-handle-segments (spline)
+  (loop :for matrix :across (geometry spline)
+        :for a1 = (v3:vec (dv3:vec (dm4:get-column matrix 0)))
+        :for a2 = (v3:vec (dv3:vec (dm4:get-column matrix 1)))
+        :for b1 = (v3:vec (dv3:vec (dm4:get-column matrix 2)))
+        :for b2 = (v3:vec (dv3:vec (dm4:get-column matrix 3)))
+        :collect (list a1 a2)
+        :collect (list b1 b2)))
