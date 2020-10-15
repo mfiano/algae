@@ -16,7 +16,8 @@
    #:collect-points
    #:collect-segments
    #:evaluate
-   #:make-curve))
+   #:make-curve
+   #:point-count-valid-p))
 
 (in-package #:net.mfiano.lisp.algae.spline.cubic-bezier)
 
@@ -28,13 +29,13 @@
             (:conc-name nil)
             (:predicate nil)
             (:copier nil))
-  (subdivisions 100 :type fixnum)
+  (divisions 100 :type fixnum)
   (geometry (make-array 0 :adjustable t :fill-pointer 0) :type vector)
   (arc-lengths (make-array 0) :type simple-array))
 
 (defun estimate-arc-lengths (spline)
   (setf (aref (arc-lengths spline) 0) 0f0)
-  (loop :with max = (subdivisions spline)
+  (loop :with max = (divisions spline)
         :for i :from 1 :to max
         :for previous = (evaluate spline 0) :then current
         :for current = (evaluate spline (/ i max))
@@ -44,6 +45,10 @@
 (defun verify-points (points)
   (unless (every (lambda (x) (typep x 'v3:vec)) points)
     (error "Points must be a list of 3-component vectors.")))
+
+(defun point-count-valid-p (point-count)
+  (and (> point-count 1)
+       (= 1 (mod point-count 3))))
 
 (defun add-geometry (spline points)
   (loop :with segment-count = (1+ (/ (- (length points) 4) 3))
@@ -57,7 +62,7 @@
 
 (defun make-geometry (spline points)
   (let ((point-count (length points)))
-    (unless (= 1 (mod point-count 3))
+    (unless (point-count-valid-p point-count)
       (error "Invalid number of points: ~s." point-count))
     (verify-points points)
     (add-geometry spline points)))
@@ -75,12 +80,11 @@
                            (dm4:get-column (aref geometry last-index) 3)))))
       (add-geometry spline (cons shared-point points)))))
 
-(defun make-curve (points &key (subdivisions 100))
-  (unless (evenp subdivisions)
-    (error "Subdivision count must be even."))
-  (let* ((arc-lengths (make-array (1+ subdivisions)
-                                  :element-type 'single-float))
-         (spline (%make-curve :subdivisions subdivisions
+(defun make-curve (points &key (divisions 100))
+  (unless (evenp divisions)
+    (error "Division count must be even."))
+  (let* ((arc-lengths (make-array (1+ divisions) :element-type 'single-float))
+         (spline (%make-curve :divisions divisions
                               :arc-lengths arc-lengths)))
     (make-geometry spline points)
     spline))
