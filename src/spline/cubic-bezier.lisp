@@ -16,6 +16,7 @@
    #:collect-handle-segments
    #:collect-points
    #:collect-segments
+   #:edit-point
    #:evaluate
    #:make-curve
    #:point-count-valid-p))
@@ -32,7 +33,8 @@
             (:copier nil))
   (divisions 100 :type fixnum)
   (geometry (make-array 0 :adjustable t :fill-pointer 0) :type vector)
-  (arc-lengths (make-array 0) :type simple-array))
+  (arc-lengths (make-array 0) :type simple-array)
+  (arc-lengths-update nil :type boolean))
 
 (defun estimate-arc-lengths (spline)
   (setf (aref (arc-lengths spline) 0) 0f0)
@@ -52,14 +54,15 @@
        (= 1 (mod point-count 3))))
 
 (defun add-geometry (spline points)
-  (loop :with segment-count = (1+ (/ (- (length points) 4) 3))
+  (loop :with points = (map 'list #'identity points)
+        :with segment-count = (1+ (/ (- (length points) 4) 3))
         :for (a b c d) :on points :by #'cdddr
         :for index :from 0
         :when (< index segment-count)
           :do (vector-push-extend
                (dm4:mat (m4:mat (v4:vec a) (v4:vec b) (v4:vec c) (v4:vec d)))
                (geometry spline)))
-  (estimate-arc-lengths spline))
+  (setf (arc-lengths-update spline) t))
 
 (defun make-geometry (spline points)
   (let ((point-count (length points)))
@@ -79,14 +82,32 @@
            (shared-point (v3:vec
                           (dv3:vec
                            (dm4:get-column (aref geometry last-index) 3)))))
-      (add-geometry spline (cons shared-point points)))))
+      (add-geometry spline (cons shared-point points))
+      (values))))
+
+(defun edit-point (spline index value)
+  (flet ((write-column (geometry value matrix-index column-index)
+           (let ((matrix (aref geometry matrix-index)))
+             (dm4:set-column! matrix matrix value column-index))))
+    (let ((geometry (geometry spline))
+          (matrix-index (floor index 4))
+          (value (dv4:vec (dv3:vec value))))
+      (unless (< matrix-index (length geometry))
+        (error "There is no point to edit at index ~s." index))
+      (write-column geometry value matrix-index (mod index 4))
+      (case (mod index 4)
+        (0 (when (plusp index)
+             (write-column geometry value (1- matrix-index) 3)))
+        (3 (when (< matrix-index (1- (length geometry)))
+             (write-column geometry value (1+ matrix-index) 0))))
+      (setf (arc-lengths-update spline) t)
+      (values))))
 
 (defun make-curve (points &key (divisions 100))
   (unless (evenp divisions)
     (error "Division count must be even."))
   (let* ((arc-lengths (make-array (1+ divisions) :element-type 'single-float))
-         (spline (%make-curve :divisions divisions
-                              :arc-lengths arc-lengths)))
+         (spline (%make-curve :divisions divisions :arc-lengths arc-lengths)))
     (make-geometry spline points)
     spline))
 
@@ -109,6 +130,9 @@
                   (if (= before target)
                       (/ index (1- arc-length-count))
                       (/ (+ index fraction) (1- arc-length-count)))))))
+    (when (arc-lengths-update spline)
+      (estimate-arc-lengths spline)
+      (setf (arc-lengths-update spline) nil))
     (let* ((arc-lengths (arc-lengths spline))
            (arc-length-count (length arc-lengths))
            (target (* (aref arc-lengths (1- arc-length-count)) parameter))
