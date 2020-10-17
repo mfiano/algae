@@ -19,7 +19,8 @@
    #:edit-point
    #:evaluate
    #:make-curve
-   #:point-count-valid-p))
+   #:point-count-valid-p
+   #:point-index-present-p))
 
 (in-package #:net.mfiano.lisp.algae.spline.cubic-bezier)
 
@@ -52,6 +53,11 @@
 (defun point-count-valid-p (point-count)
   (and (> point-count 1)
        (= 1 (mod point-count 3))))
+
+(defun point-index-present-p (spline index)
+  (let* ((geometry (geometry spline))
+         (matrix-index (max 0 (floor (1- index) 3))))
+    (<= 0 matrix-index (1- (length geometry)))))
 
 (defun ensure-point-list (points)
   (etypecase points
