@@ -53,8 +53,13 @@
   (and (> point-count 1)
        (= 1 (mod point-count 3))))
 
+(defun ensure-point-list (points)
+  (etypecase points
+    (list points)
+    (vector (map 'list #'identity points))))
+
 (defun add-geometry (spline points)
-  (loop :with points = (map 'list #'identity points)
+  (loop :with points = (ensure-point-list points)
         :with segment-count = (1+ (/ (- (length points) 4) 3))
         :for (a b c d) :on points :by #'cdddr
         :for index :from 0
@@ -72,7 +77,8 @@
     (add-geometry spline points)))
 
 (defun add-points (spline points)
-  (let ((point-count (length points)))
+  (let ((points (ensure-point-list points))
+        (point-count (length points)))
     (unless (and (plusp point-count)
                  (zerop (mod point-count 3)))
       (error "Invalid number of points: ~s." point-count))
