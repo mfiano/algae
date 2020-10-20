@@ -184,7 +184,9 @@
 (defun collect-points (spline count &key even-spacing)
   (declare (optimize speed))
   (loop :for i :below count
-        :collect (evaluate spline (/ i (1- count)) :even-spacing even-spacing)))
+        :collect (evaluate spline
+                           (/ i (float (1- count) 1f0))
+                           :even-spacing even-spacing)))
 
 (u:fn-> collect-segments (bezier-curve fixnum &key (:even-spacing boolean))
         list)
@@ -192,7 +194,9 @@
   (declare (optimize speed))
   (loop :for i :from 1 :to count
         :for p1 = (evaluate spline 0f0 :even-spacing even-spacing) :then p2
-        :for p2 = (evaluate spline (/ i count) :even-spacing even-spacing)
+        :for p2 = (evaluate spline
+                            (/ i (float count 1f0))
+                            :even-spacing even-spacing)
         :collect (list p1 p2)))
 
 (u:fn-> collect-handle-segments (bezier-curve) list)
