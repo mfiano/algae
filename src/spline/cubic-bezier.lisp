@@ -34,23 +34,28 @@
             (:copier nil))
   (divisions 100 :type fixnum)
   (geometry (make-array 0 :adjustable t :fill-pointer 0) :type vector)
-  (arc-lengths (make-array 0) :type simple-array)
+  (arc-lengths (make-array 0 :element-type 'single-float)
+   :type (simple-array single-float (*)))
   (arc-lengths-update nil :type boolean))
 
+(u:fn-> estimate-arc-lengths (bezier-curve) null)
 (defun estimate-arc-lengths (spline)
+  (declare (optimize speed))
   (setf (aref (arc-lengths spline) 0) 0f0)
   (loop :with max = (divisions spline)
         :for i :from 1 :to max
-        :for previous = (evaluate spline 0) :then current
-        :for current = (evaluate spline (/ i max))
-        :sum (v3:distance previous current) :into length
+        :for previous :of-type v3:vec = (evaluate spline 0) :then current
+        :for current :of-type v3:vec = (evaluate spline (/ i max))
+        :sum (v3:distance previous current) :into length :of-type single-float
         :do (setf (aref (arc-lengths spline) i) length)))
 
 (defun verify-points (points)
   (unless (every (lambda (x) (typep x 'v3:vec)) points)
     (error "Points must be a list of 3-component vectors.")))
 
-(defun point-count-valid-p (point-count)
+(u:fn-> point-count-valid-p (fixnum) boolean)
+(u:defun-inline point-count-valid-p (point-count)
+  (declare (optimize speed))
   (and (> point-count 1)
        (= 1 (mod point-count 3))))
 
@@ -59,21 +64,26 @@
          (matrix-index (max 0 (floor (1- index) 3))))
     (<= 0 matrix-index (1- (length geometry)))))
 
-(defun ensure-point-list (points)
+(u:fn-> ensure-points-list (sequence) list)
+(u:defun-inline ensure-point-list (points)
+  (declare (optimize speed))
   (etypecase points
     (list points)
     (vector (map 'list #'identity points))))
 
+(u:fn-> add-geometry (bezier-curve sequence) null)
 (defun add-geometry (spline points)
+  (declare (optimize speed))
   (loop :with points = (ensure-point-list points)
-        :with segment-count = (1+ (/ (- (length points) 4) 3))
+        :with segment-count = (1+ (the fixnum (/ (- (list-length points) 4) 3)))
         :for (a b c d) :on points :by #'cdddr
-        :for index :from 0
+        :for index :of-type fixnum :from 0
         :when (< index segment-count)
           :do (vector-push-extend
                (dm4:mat (m4:mat (v4:vec a) (v4:vec b) (v4:vec c) (v4:vec d)))
                (geometry spline)))
-  (setf (arc-lengths-update spline) t))
+  (setf (arc-lengths-update spline) t)
+  (values))
 
 (defun make-geometry (spline points)
   (let ((point-count (length points)))
@@ -83,8 +93,8 @@
     (add-geometry spline points)))
 
 (defun add-points (spline points)
-  (let ((points (ensure-point-list points))
-        (point-count (length points)))
+  (let* ((points (ensure-point-list points))
+         (point-count (list-length points)))
     (unless (and (plusp point-count)
                  (zerop (mod point-count 3)))
       (error "Invalid number of points: ~s." point-count))
@@ -123,12 +133,15 @@
     (make-geometry spline points)
     spline))
 
+(u:fn-> remap (bezier-curve single-float) single-float)
 (defun remap (spline parameter)
+  (declare (optimize speed))
   (flet ((%bisect (arc-lengths arc-length-count target)
            (loop :with high = (1- arc-length-count)
                  :with low = 0
                  :while (< low high)
-                 :for index = 0 :then (+ low (floor (- high low) 2))
+                 :for index :of-type fixnum = 0
+                   :then (+ low (floor (- high low) 2))
                  :do (if (< (aref arc-lengths index) target)
                          (setf low (1+ index))
                          (setf high index))
@@ -138,9 +151,9 @@
                   (after (aref arc-lengths (1+ index)))
                   (length (- after before))
                   (fraction (/ (- target before) length)))
-             (max 0
+             (max 0f0
                   (if (= before target)
-                      (/ index (1- arc-length-count))
+                      (/ index (float (1- arc-length-count) 1f0))
                       (/ (+ index fraction) (1- arc-length-count)))))))
     (when (arc-lengths-update spline)
       (estimate-arc-lengths spline)
@@ -167,16 +180,22 @@
       (dm4:*v4 (dm4:* (aref geometry index) +matrix+)
                (dv4:vec (* x x x) (* x x) x 1))))))
 
+(u:fn-> collect-points (bezier-curve fixnum &key (:even-spacing boolean)) list)
 (defun collect-points (spline count &key even-spacing)
+  (declare (optimize speed))
   (loop :for i :below count
         :collect (evaluate spline (/ i (1- count)) :even-spacing even-spacing)))
 
+(u:fn-> collect-segments (bezier-curve fixnum &key (:even-spacing boolean))
+        list)
 (defun collect-segments (spline count &key even-spacing)
+  (declare (optimize speed))
   (loop :for i :from 1 :to count
         :for p1 = (evaluate spline 0 :even-spacing even-spacing) :then p2
         :for p2 = (evaluate spline (/ i count) :even-spacing even-spacing)
         :collect (list p1 p2)))
 
+(u:fn-> collect-handle-segments (bezier-curve) list)
 (defun collect-handle-segments (spline)
   (loop :for matrix :across (geometry spline)
         :for a1 = (v3:vec (dv3:vec (dm4:get-column matrix 0)))
