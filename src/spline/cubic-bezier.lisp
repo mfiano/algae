@@ -44,7 +44,7 @@
   (setf (aref (arc-lengths spline) 0) 0f0)
   (loop :with max = (divisions spline)
         :for i :from 1 :to max
-        :for previous :of-type v3:vec = (evaluate spline 0) :then current
+        :for previous :of-type v3:vec = (evaluate spline 0f0) :then current
         :for current :of-type v3:vec = (evaluate spline (/ i max))
         :sum (v3:distance previous current) :into length :of-type single-float
         :do (setf (aref (arc-lengths spline) i) length)))
@@ -191,7 +191,7 @@
 (defun collect-segments (spline count &key even-spacing)
   (declare (optimize speed))
   (loop :for i :from 1 :to count
-        :for p1 = (evaluate spline 0 :even-spacing even-spacing) :then p2
+        :for p1 = (evaluate spline 0f0 :even-spacing even-spacing) :then p2
         :for p2 = (evaluate spline (/ i count) :even-spacing even-spacing)
         :collect (list p1 p2)))
 
