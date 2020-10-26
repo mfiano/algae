@@ -11,6 +11,7 @@
    #:find
    #:min)
   (:export
+   #:clear
    #:delete
    #:find
    #:insert
@@ -88,6 +89,14 @@
           (node-right node) sentinel)
     node))
 
+(u:fn-> clear (tree) tree)
+(defun clear (tree)
+  (declare (optimize speed))
+  (let ((sentinel (tree-sentinel tree)))
+    (setf (tree-root tree) sentinel)
+    (clrhash (node-data (tree-sentinel tree)))
+    tree))
+
 (u:fn-> make-tree (&key (:item-type symbol)
                         (:key function)
                         (:sort function)
@@ -105,9 +114,8 @@
          (sentinel (make-node tree nil)))
     (setf (tree-sentinel tree) sentinel
           (node-left sentinel) sentinel
-          (node-right sentinel) sentinel
-          (tree-root tree) sentinel)
-    (clrhash (node-data (tree-sentinel tree)))
+          (node-right sentinel) sentinel)
+    (clear tree)
     tree))
 
 (u:fn-> walk (tree function) null)
