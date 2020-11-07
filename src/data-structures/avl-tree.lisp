@@ -12,6 +12,7 @@
    #:min)
   (:export
    #:clear
+   #:copy
    #:delete
    #:find
    #:insert
@@ -117,6 +118,18 @@
           (node-right sentinel) sentinel)
     (clear tree)
     tree))
+
+(u:fn-> copy (tree &key (:key function) (:sort function)) tree)
+(defun copy (tree &key key sort)
+  (declare (optimize speed))
+  (let ((new-tree (make-tree :item-type (tree-item-type tree)
+                             :key (or key (tree-key tree))
+                             :sort (or sort (tree-sorter tree))
+                             :hash-test (tree-hash-test tree))))
+    (walk tree
+          (lambda (x)
+            (insert new-tree x)))
+    new-tree))
 
 (u:fn-> walk (tree function) null)
 (defun walk (tree func)
