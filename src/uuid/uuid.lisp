@@ -5,6 +5,7 @@
 
 (defpackage #:net.mfiano.lisp.algae.uuid
   (:local-nicknames
+   (#:rng #:net.mfiano.lisp.algae.rng)
    (#:u #:net.mfiano.lisp.golden-utils))
   (:use #:cl)
   (:export
@@ -74,10 +75,16 @@
                   :low low
                   :high high))))
 
-(defun make-uuid ()
+(defun make-uuid (&optional generator)
   (declare (optimize speed)
            (inline %make-uuid))
-  (symbol-macrolet ((rand (random (expt 2 64))))
+  (flet ((%random ()
+           (if generator
+               (dpb (rng:uint generator 0 (1- (expt 2 32)) nil)
+                    (byte 32 32)
+                    (ldb (byte 32 0)
+                         (rng:uint generator 0 (1- (expt 2 32)) nil)))
+               (random (expt 2 64)))))
     (%make-uuid :version 4
-                :low (dpb #b100 (byte 3 61) rand)
-                :high (dpb 4 (byte 4 12) rand))))
+                :low (dpb 4 (byte 3 61) (%random))
+                :high (dpb 4 (byte 4 12) (%random)))))
