@@ -42,10 +42,12 @@
 (u:define-printer (slot-map stream)
   (format stream "~s" (data slot-map)))
 
-(defun make-slot-map (&key (capacity 128) (data-type 'u:ub32))
+(defun make-slot-map (&key (capacity 128) (initial-element 0)
+                        (data-type 'u:ub32))
   (let ((data (make-array capacity
                           :adjustable t
                           :fill-pointer 0
+                          :initial-element initial-element
                           :element-type data-type)))
     (%make-slot-map :data data
                     :slots (da:make-array :capacity capacity)
