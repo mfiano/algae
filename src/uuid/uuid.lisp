@@ -26,7 +26,7 @@
   (low 0 :type u:ub64)
   (high 0 :type u:ub64))
 
-(u:define-printer (uuid stream)
+(u:define-printer (uuid stream :type nil)
   (format stream "~a" (uuid->string uuid)))
 
 (defun uuid->string (uuid)
