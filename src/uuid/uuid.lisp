@@ -29,6 +29,7 @@
 (u:define-printer (uuid stream :type nil)
   (format stream "~a" (uuid->string uuid)))
 
+(u:fn-> uuid->string (uuid) string)
 (defun uuid->string (uuid)
   (declare (optimize speed))
   (macrolet ((%write (string count offset bits word)
@@ -37,7 +38,6 @@
                               :collect `(aref "0123456789ABCDEF"
                                               (ldb (byte 4 ,(- bits (* i 4)))
                                                    ,word))))))
-    (check-type uuid uuid)
     (let ((high (uuid-high uuid))
           (low (uuid-low uuid))
           (string (make-string 36 :element-type 'base-char)))
