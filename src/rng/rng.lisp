@@ -16,6 +16,7 @@
    #:element
    #:find-generator
    #:float
+   #:generator
    #:int
    #:make-generator
    #:seed
