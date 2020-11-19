@@ -1133,15 +1133,15 @@
 
 (glob:define-global-var =generators= (u:dict #'eq))
 
-(defclass generator ()
-  ((%id :reader id
-        :initarg :id)
-   (%kernel :reader kernel
-            :initarg :kernel)
-   (%seed :reader seed
-          :initarg :seed)
-   (%seed-phrase :reader seed-phrase
-                 :initarg :seed-phrase)))
+(defstruct (generator
+            (:constructor %%make-generator)
+            (:conc-name nil)
+            (:predicate nil)
+            (:copier nil))
+  (id nil :type symbol)
+  (kernel (pcg:make-pcg) :type pcg:pcg)
+  (seed 0 :type u:ub64)
+  (seed-phrase "" :type string))
 
 (defun generate-seed-phrase ()
   (let (words)
@@ -1168,11 +1168,11 @@
   (when (keywordp id)
     (error "Generator ID must not be a keyword symbol."))
   (let* ((seed (make-seed seed-phrase))
-         (generator (make-instance 'generator
-                                   :id id
-                                   :kernel (pcg:make-pcg :seed seed)
-                                   :seed seed
-                                   :seed-phrase seed-phrase)))
+         (generator (%%make-generator
+                     :id id
+                     :kernel (pcg:make-pcg :seed seed)
+                     :seed seed
+                     :seed-phrase seed-phrase)))
     (setf (u:href =generators= id) generator)
     generator))
 
