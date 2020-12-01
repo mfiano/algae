@@ -1133,15 +1133,14 @@
 
 (glob:define-global-var =generators= (u:dict #'eq))
 
-(defclass generator ()
-  ((%id :reader id
-        :initarg :id)
-   (%kernel :reader kernel
-            :initarg :kernel)
-   (%seed :reader seed
-          :initarg :seed)
-   (%seed-phrase :reader seed-phrase
-                 :initarg :seed-phrase)))
+(defstruct (generator
+            (:constructor %%make-generator)
+            (:predicate nil)
+            (:copier nil))
+  (id nil :type (and symbol (not keyword)))
+  kernel
+  (seed 0 :type u:ub64)
+  (seed-phrase "" :type string))
 
 (defun generate-seed-phrase ()
   (let (words)
@@ -1165,14 +1164,11 @@
           (ironclad:ascii-string-to-byte-array phrase))))))
 
 (defun %make-generator (id seed-phrase)
-  (when (keywordp id)
-    (error "Generator ID must not be a keyword symbol."))
   (let* ((seed (make-seed seed-phrase))
-         (generator (make-instance 'generator
-                                   :id id
-                                   :kernel (pcg:make-pcg :seed seed)
-                                   :seed seed
-                                   :seed-phrase seed-phrase)))
+         (generator (%%make-generator :id id
+                                      :kernel (pcg:make-pcg :seed seed)
+                                      :seed seed
+                                      :seed-phrase seed-phrase)))
     (setf (u:href =generators= id) generator)
     generator))
 
@@ -1196,7 +1192,7 @@
 (defun bool (id &optional (probability 0.5f0))
   (declare (optimize speed))
   (let ((generator (find-generator id)))
-    (< (the single-float (pcg:pcg-random (kernel generator) 1f0))
+    (< (the single-float (pcg:pcg-random (generator-kernel generator) 1f0))
        probability)))
 
 (u:fn-> int (symbol u:b32 u:b32 &optional boolean) fixnum)
@@ -1205,7 +1201,7 @@
   (unless (<= min max)
     (error 'invalid-range :min min :max max))
   (let ((generator (find-generator id)))
-    (values (pcg:pcg-random (kernel generator) min max inclusive))))
+    (values (pcg:pcg-random (generator-kernel generator) min max inclusive))))
 
 (u:fn-> uint (symbol u:ub32 u:ub32 &optional boolean) fixnum)
 (defun uint (id min max &optional (inclusive t))
@@ -1213,7 +1209,7 @@
   (unless (<= min max)
     (error 'invalid-range :min min :max max))
   (let ((generator (find-generator id)))
-    (values (pcg:pcg-random (kernel generator) min max inclusive))))
+    (values (pcg:pcg-random (generator-kernel generator) min max inclusive))))
 
 (u:fn-> float (symbol single-float single-float) single-float)
 (defun float (id min max)
@@ -1221,14 +1217,14 @@
   (unless (<= min max)
     (error 'invalid-range :min min :max max))
   (let ((generator (find-generator id)))
-    (values (pcg:pcg-random (kernel generator) min max))))
+    (values (pcg:pcg-random (generator-kernel generator) min max))))
 
 (u:fn-> element (symbol sequence) atom)
 (defun element (id sequence)
   (let ((generator (find-generator id))
         (length (length sequence)))
     (when (plusp length)
-      (elt sequence (pcg:pcg-random (kernel generator) length)))))
+      (elt sequence (pcg:pcg-random (generator-kernel generator) length)))))
 
 (u:fn-> shuffle (symbol sequence) sequence)
 (defun shuffle (id sequence)
