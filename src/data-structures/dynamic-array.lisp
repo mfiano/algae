@@ -15,6 +15,7 @@
    #:fill-pointer
    #:length
    #:make-array
+   #:map
    #:pop
    #:push)
   (:export
@@ -23,6 +24,7 @@
    #:dynamic-array
    #:length
    #:make-array
+   #:map
    #:pop
    #:push))
 
@@ -34,18 +36,20 @@
             (:conc-name nil)
             (:predicate nil)
             (:copier nil))
-  (data (cl:make-array 0 :element-type 'fixnum) :type (simple-array fixnum (*)))
-  (initial-element 0 :type fixnum)
+  (data (cl:make-array 0 :element-type t) :type simple-vector)
+  (initial-element 0)
   (fill-pointer 0 :type fixnum))
 
 (u:define-printer (dynamic-array stream :type nil)
-  (format stream "~a"
-          (subseq (data dynamic-array) 0 (fill-pointer dynamic-array))))
+  (format stream "~{~a~^ ~}"
+          (coerce (subseq (data dynamic-array) 0 (fill-pointer dynamic-array))
+                  'list)))
 
-(defun make-array (&key (size 0) (capacity 128) (initial-element 0))
+(defun make-array (&key (size 0) (capacity 128) (element-type t)
+                     initial-element)
   (assert (<= size capacity))
   (let ((data (cl:make-array capacity
-                             :element-type 'fixnum
+                             :element-type element-type
                              :initial-element initial-element)))
     (%make-array :data data
                  :initial-element initial-element
@@ -62,7 +66,7 @@
 (u:defun-inline length (dynamic-array)
   (fill-pointer dynamic-array))
 
-(u:fn-> aref (dynamic-array fixnum) fixnum)
+(u:fn-> aref (dynamic-array fixnum) t)
 (u:defun-inline aref (dynamic-array index)
   (declare (optimize speed))
   (if (< index (fill-pointer dynamic-array))
@@ -70,7 +74,7 @@
         (cl:aref (data dynamic-array) index))
       (error "Index out of bounds.")))
 
-(u:fn-> (setf aref) (fixnum dynamic-array fixnum) fixnum)
+(u:fn-> (setf aref) (t dynamic-array fixnum) t)
 (u:defun-inline (setf aref) (value dynamic-array index)
   (declare (optimize speed))
   (if (< index (fill-pointer dynamic-array))
@@ -78,7 +82,7 @@
         (setf (cl:aref (data dynamic-array) index) value))
       (error "Index out of bounds.")))
 
-(u:fn-> pop (dynamic-array) fixnum)
+(u:fn-> pop (dynamic-array) t)
 (u:defun-inline pop (dynamic-array)
   (declare (optimize speed))
   (if (zerop (fill-pointer dynamic-array))
@@ -87,7 +91,7 @@
         (cl:aref (data dynamic-array)
                  (decf (fill-pointer dynamic-array))))))
 
-(u:fn-> push (dynamic-array fixnum) dynamic-array)
+(u:fn-> push (dynamic-array t) dynamic-array)
 (u:defun-inline push (dynamic-array value)
   (declare (optimize speed))
   (let* ((data (data dynamic-array))
@@ -103,3 +107,10 @@
       (setf (cl:aref (data dynamic-array) fill-pointer) value)
       (incf (fill-pointer dynamic-array)))
     dynamic-array))
+
+(u:fn-> map (dynamic-array function) null)
+(defun map (dynamic-array func)
+  (declare (optimize speed))
+  (loop :for i :below (length dynamic-array)
+        :for element = (aref dynamic-array i)
+        :do (funcall func element)))
