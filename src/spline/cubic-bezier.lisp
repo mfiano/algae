@@ -13,6 +13,7 @@
   (:use #:cl)
   (:export
    #:add-points
+   #:bezier-curve
    #:collect-handle-segments
    #:collect-points
    #:collect-segments

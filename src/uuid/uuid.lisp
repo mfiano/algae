@@ -26,9 +26,10 @@
   (low 0 :type u:ub64)
   (high 0 :type u:ub64))
 
-(u:define-printer (uuid stream)
+(u:define-printer (uuid stream :type nil)
   (format stream "~a" (uuid->string uuid)))
 
+(u:fn-> uuid->string (uuid) string)
 (defun uuid->string (uuid)
   (declare (optimize speed))
   (macrolet ((%write (string count offset bits word)
@@ -37,7 +38,6 @@
                               :collect `(aref "0123456789ABCDEF"
                                               (ldb (byte 4 ,(- bits (* i 4)))
                                                    ,word))))))
-    (check-type uuid uuid)
     (let ((high (uuid-high uuid))
           (low (uuid-low uuid))
           (string (make-string 36 :element-type 'base-char)))
@@ -53,8 +53,8 @@
         (%write string 12 24 44 low))
       string)))
 
+(u:fn-> string->uuid ((simple-string 36)) uuid)
 (defun string->uuid (string)
-  (check-type string (simple-string 36))
   (flet ((parse-variant (bits)
            (cond
              ((not (logbitp 2 bits))
@@ -75,15 +75,16 @@
                   :low low
                   :high high))))
 
-(defun make-uuid (&optional generator)
+(u:fn-> make-uuid (&optional symbol) uuid)
+(defun make-uuid (&optional generator-id)
   (declare (optimize speed)
            (inline %make-uuid))
   (flet ((%random ()
-           (if generator
-               (dpb (rng:uint generator 0 (1- (expt 2 32)) nil)
+           (if generator-id
+               (dpb (rng:uint generator-id 0 (1- (expt 2 32)) nil)
                     (byte 32 32)
                     (ldb (byte 32 0)
-                         (rng:uint generator 0 (1- (expt 2 32)) nil)))
+                         (rng:uint generator-id 0 (1- (expt 2 32)) nil)))
                (random (expt 2 64)))))
     (%make-uuid :version 4
                 :low (dpb 4 (byte 3 61) (%random))
