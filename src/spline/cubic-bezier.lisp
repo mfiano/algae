@@ -7,6 +7,7 @@
    (#:dv4 #:net.mfiano.lisp.origin.dvec4)
    (#:dm4 #:net.mfiano.lisp.origin.dmat4)
    (#:m4 #:net.mfiano.lisp.origin.mat4)
+   (#:point3d #:net.mfiano.lisp.origin.point3d)
    (#:u #:net.mfiano.lisp.golden-utils)
    (#:v3 #:net.mfiano.lisp.origin.vec3)
    (#:v4 #:net.mfiano.lisp.origin.vec4))
@@ -47,7 +48,7 @@
         :for i :from 1 :to max
         :for previous :of-type v3:vec = (evaluate spline 0f0) :then current
         :for current :of-type v3:vec = (evaluate spline (/ i max))
-        :sum (v3:distance previous current) :into length :of-type single-float
+        :sum (point3d:distance previous current) :into length :of-type single-float
         :do (setf (aref (arc-lengths spline) i) length)))
 
 (defun verify-points (points)
