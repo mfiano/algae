@@ -7,7 +7,7 @@
    (#:dv4 #:net.mfiano.lisp.origin.dvec4)
    (#:dm4 #:net.mfiano.lisp.origin.dmat4)
    (#:m4 #:net.mfiano.lisp.origin.mat4)
-   (#:point3d #:net.mfiano.lisp.origin.point3d)
+   (#:point3d #:net.mfiano.lisp.origin.geometry.point3d)
    (#:u #:net.mfiano.lisp.golden-utils)
    (#:v3 #:net.mfiano.lisp.origin.vec3)
    (#:v4 #:net.mfiano.lisp.origin.vec4))
