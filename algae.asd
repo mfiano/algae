@@ -3,8 +3,8 @@
   :author ("Michael Fiano <mail@mfiano.net>")
   :license "MIT"
   :homepage "https://mfiano.net/projects/algae"
-  :source-control (:git "https://github.com/mfiano/algae")
-  :bug-tracker "https://github.com/mfiano/algae/issues"
+  :source-control (:git "https://git.mfiano.net/mfiano/algae")
+  :bug-tracker "https://git.mfiano.net/mfiano/algae/issues"
   :encoding :utf-8
   :depends-on (#:cl-pcg
                #:ironclad
