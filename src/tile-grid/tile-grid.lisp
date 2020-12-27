@@ -6,9 +6,9 @@
 ;;;; various user-definable properties that can be added/removed with an
 ;;;; included API.
 
-(defpackage #:net.mfiano.lisp.algae.tile-grid
+(defpackage #:algae.tile-grid
   (:local-nicknames
-   (#:u #:net.mfiano.lisp.golden-utils))
+   (#:u #:golden-utils))
   (:use #:cl)
   (:export
    #:add-properties
@@ -30,7 +30,7 @@
    #:x
    #:y))
 
-(in-package #:net.mfiano.lisp.algae.tile-grid)
+(in-package #:algae.tile-grid)
 
 (deftype cell () '(simple-array fixnum (3)))
 

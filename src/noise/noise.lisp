@@ -1,10 +1,10 @@
 (in-package #:cl-user)
 
-(defpackage #:net.mfiano.lisp.algae.noise
+(defpackage #:algae.noise
   (:local-nicknames
-   (#:c #:net.mfiano.lisp.algae.noise.common)
-   (#:rng #:net.mfiano.lisp.algae.rng)
-   (#:u #:net.mfiano.lisp.golden-utils))
+   (#:c #:algae.noise.common)
+   (#:rng #:algae.rng)
+   (#:u #:golden-utils))
   (:use #:cl)
   (:shadow
    #:+
@@ -40,7 +40,7 @@
    #:wavelength
    #:write-image))
 
-(in-package #:net.mfiano.lisp.algae.noise)
+(in-package #:algae.noise)
 
 (defun make-sampler (type &optional (seed "default"))
   (check-type seed string)

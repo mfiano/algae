@@ -4,10 +4,10 @@
 ;;;; transformations across a grid, not unlike techniques used in image
 ;;;; processing filters.
 
-(defpackage #:net.mfiano.lisp.algae.convolution-kernel
+(defpackage #:algae.convolution-kernel
   (:local-nicknames
-   (#:tg #:net.mfiano.lisp.algae.tile-grid)
-   (#:u #:net.mfiano.lisp.golden-utils))
+   (#:tg #:algae.tile-grid)
+   (#:u #:golden-utils))
   (:use #:cl)
   (:shadow
    #:count
@@ -28,7 +28,7 @@
    #:reshape
    #:resolve))
 
-(in-package #:net.mfiano.lisp.algae.convolution-kernel)
+(in-package #:algae.convolution-kernel)
 
 (defvar *shapes* (u:dict #'eq))
 

@@ -5,10 +5,10 @@
 ;;;; Reference 2: http://bitsquid.blogspot.com/2011/09/managing-decoupling-part-4-id-lookup.html
 ;;;; Reference 3: https://github.com/orlp/slotmap
 
-(defpackage #:net.mfiano.lisp.algae.data-structures.slot-map
+(defpackage #:algae.slot-map
   (:local-nicknames
-   (#:da #:net.mfiano.lisp.algae.data-structures.dynamic-array)
-   (#:u #:net.mfiano.lisp.golden-utils))
+   (#:da #:algae.dynamic-array)
+   (#:u #:golden-utils))
   (:use #:cl)
   (:shadow
    #:delete
@@ -21,7 +21,7 @@
    #:map-keys
    #:map-values))
 
-(in-package #:net.mfiano.lisp.algae.data-structures.slot-map)
+(in-package #:algae.slot-map)
 
 (u:define-constant +id-bits+ 24 :test #'=)
 

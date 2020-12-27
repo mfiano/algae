@@ -2,9 +2,9 @@
 
 ;;;; An implementation of the sparse set data structure.
 
-(defpackage #:net.mfiano.lisp.algae.data-structures.sparse-set
+(defpackage #:algae.sparse-set
   (:local-nicknames
-   (#:u #:net.mfiano.lisp.golden-utils))
+   (#:u #:golden-utils))
   (:use #:cl)
   (:shadow
    #:delete
@@ -21,7 +21,7 @@
    #:make-sparse-set
    #:map))
 
-(in-package #:net.mfiano.lisp.algae.data-structures.sparse-set)
+(in-package #:algae.sparse-set)
 
 (defstruct (sparse-set
             (:constructor %make-sparse-set)

@@ -2,9 +2,9 @@
 
 ;;;; An implementation of the binary search tree data structure.
 
-(defpackage #:net.mfiano.lisp.algae.data-structures.binary-search-tree
+(defpackage #:algae.binary-search-tree
   (:local-nicknames
-   (#:u #:net.mfiano.lisp.golden-utils))
+   (#:u #:golden-utils))
   (:use #:cl)
   (:shadow
    #:delete
@@ -25,7 +25,7 @@
    #:valid-p
    #:walk))
 
-(in-package #:net.mfiano.lisp.algae.data-structures.binary-search-tree)
+(in-package #:algae.binary-search-tree)
 
 (defstruct (tree
             (:constructor %make-tree)

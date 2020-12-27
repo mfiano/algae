@@ -3,10 +3,10 @@
 ;;;; A Universally Unique Identifier (UUID) decoder and encoder. The encoder
 ;;;; supports UUID version 4 only.
 
-(defpackage #:net.mfiano.lisp.algae.uuid
+(defpackage #:algae.uuid
   (:local-nicknames
-   (#:rng #:net.mfiano.lisp.algae.rng)
-   (#:u #:net.mfiano.lisp.golden-utils))
+   (#:rng #:algae.rng)
+   (#:u #:golden-utils))
   (:use #:cl)
   (:export
    #:make-uuid
@@ -16,7 +16,7 @@
    #:uuid-version
    #:uuid->string))
 
-(in-package #:net.mfiano.lisp.algae.uuid)
+(in-package #:algae.uuid)
 
 (defstruct (uuid (:constructor %make-uuid)
                  (:predicate nil)

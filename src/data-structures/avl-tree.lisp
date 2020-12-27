@@ -2,9 +2,9 @@
 
 ;;;; An implementation of the AVL tree data structure.
 
-(defpackage #:net.mfiano.lisp.algae.data-structures.avl-tree
+(defpackage #:algae.avl-tree
   (:local-nicknames
-   (#:u #:net.mfiano.lisp.golden-utils))
+   (#:u #:golden-utils))
   (:use #:cl)
   (:shadow
    #:delete
@@ -22,7 +22,7 @@
    #:valid-p
    #:walk))
 
-(in-package #:net.mfiano.lisp.algae.data-structures.avl-tree)
+(in-package #:algae.avl-tree)
 
 (defstruct (tree
             (:constructor %make-tree)

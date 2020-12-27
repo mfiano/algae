@@ -1,15 +1,15 @@
 (in-package #:cl-user)
 
-(defpackage #:net.mfiano.lisp.algae.noise.perlin-improved-3d
+(defpackage #:algae.noise.perlin-improved-3d
   (:local-nicknames
-   (#:c #:net.mfiano.lisp.algae.noise.common)
-   (#:rng #:net.mfiano.lisp.algae.rng)
-   (#:u #:net.mfiano.lisp.golden-utils))
+   (#:c #:algae.noise.common)
+   (#:rng #:algae.rng)
+   (#:u #:golden-utils))
   (:use #:cl)
   (:export
    #:sample))
 
-(in-package #:net.mfiano.lisp.algae.noise.perlin-improved-3d)
+(in-package #:algae.noise.perlin-improved-3d)
 
 (u:defun-inline sample (table x y z)
   (declare (optimize speed)

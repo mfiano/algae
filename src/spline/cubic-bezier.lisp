@@ -1,16 +1,16 @@
 (in-package #:cl-user)
 
-(defpackage #:net.mfiano.lisp.algae.spline.cubic-bezier
+(defpackage #:algae.cubic-bezier
   (:local-nicknames
-   (#:avl #:net.mfiano.lisp.algae.data-structures.avl-tree)
-   (#:dv3 #:net.mfiano.lisp.origin.dvec3)
-   (#:dv4 #:net.mfiano.lisp.origin.dvec4)
-   (#:dm4 #:net.mfiano.lisp.origin.dmat4)
-   (#:m4 #:net.mfiano.lisp.origin.mat4)
-   (#:point3d #:net.mfiano.lisp.origin.geometry.point3d)
-   (#:u #:net.mfiano.lisp.golden-utils)
-   (#:v3 #:net.mfiano.lisp.origin.vec3)
-   (#:v4 #:net.mfiano.lisp.origin.vec4))
+   (#:avl #:algae.avl-tree)
+   (#:dv3 #:origin.dvec3)
+   (#:dv4 #:origin.dvec4)
+   (#:dm4 #:origin.dmat4)
+   (#:m4 #:origin.mat4)
+   (#:point3d #:origin.geometry.point3d)
+   (#:u #:golden-utils)
+   (#:v3 #:origin.vec3)
+   (#:v4 #:origin.vec4))
   (:use #:cl)
   (:export
    #:add-points
@@ -24,7 +24,7 @@
    #:point-count-valid-p
    #:point-index-present-p))
 
-(in-package #:net.mfiano.lisp.algae.spline.cubic-bezier)
+(in-package #:algae.cubic-bezier)
 
 (u:define-constant +matrix+
     (dm4:mat -1 3 -3 1 3 -6 3 0 -3 3 0 0 1 0 0 0) :test #'equalp)

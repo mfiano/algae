@@ -23,7 +23,7 @@ I'd be happy to hear from you.
 ## Install
 
 ```lisp
-(ql:quickload :net.mfiano.lisp.algae)
+(ql:quickload :algae)
 ```
 
 ## Usage

@@ -1,4 +1,4 @@
-(in-package #:net.mfiano.lisp.algae.grid)
+(in-package #:algae.grid)
 
 (defclass quad-grid/4-way (quad-grid) ())
 

@@ -1,4 +1,4 @@
-(in-package #:net.mfiano.lisp.algae.grid)
+(in-package #:algae.grid)
 
 (defclass hex-grid/columns (hex-grid) ())
 

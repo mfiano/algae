@@ -2,10 +2,10 @@
 
 ;;;; An implementation of the quad tree data structure.
 
-(defpackage #:net.mfiano.lisp.algae.data-structures.quad-tree
+(defpackage #:algae.quad-tree
   (:local-nicknames
-   (#:u #:net.mfiano.lisp.golden-utils)
-   (#:v2 #:net.mfiano.lisp.origin.vec2))
+   (#:u #:golden-utils)
+   (#:v2 #:origin.vec2))
   (:use #:cl)
   (:export
    #:boundary
@@ -15,7 +15,7 @@
    #:query
    #:tree))
 
-(in-package #:net.mfiano.lisp.algae.data-structures.quad-tree)
+(in-package #:algae.quad-tree)
 
 (defstruct (boundary
             (:constructor make-boundary (center extents))

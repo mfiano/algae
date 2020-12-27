@@ -1,15 +1,15 @@
 (in-package #:cl-user)
 
-(defpackage #:net.mfiano.lisp.algae.noise.simplex-3d
+(defpackage #:algae.noise.simplex-3d
   (:local-nicknames
-   (#:c #:net.mfiano.lisp.algae.noise.common)
-   (#:rng #:net.mfiano.lisp.algae.rng)
-   (#:u #:net.mfiano.lisp.golden-utils))
+   (#:c #:algae.noise.common)
+   (#:rng #:algae.rng)
+   (#:u #:golden-utils))
   (:use #:cl)
   (:export
    #:sample))
 
-(in-package #:net.mfiano.lisp.algae.noise.simplex-3d)
+(in-package #:algae.noise.simplex-3d)
 
 (u:define-constant +skew-factor+ (/ 3d0))
 

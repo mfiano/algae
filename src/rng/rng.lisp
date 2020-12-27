@@ -3,10 +3,10 @@
 ;;;; A simple pool of random number generators that can be seeded with a
 ;;;; consistent state across hardware and Lisp implementations.
 
-(defpackage #:net.mfiano.lisp.algae.rng
+(defpackage #:algae.rng
   (:local-nicknames
    (#:glob #:global-vars)
-   (#:u #:net.mfiano.lisp.golden-utils))
+   (#:u #:golden-utils))
   (:use #:cl)
   (:shadow #:float)
   (:export
@@ -24,7 +24,7 @@
    #:shuffle
    #:uint))
 
-(in-package #:net.mfiano.lisp.algae.rng)
+(in-package #:algae.rng)
 
 (u:define-constant +dictionary+
     #("gaming" "shopper" "moistness" "truth" "renounce" "retry" "compound"

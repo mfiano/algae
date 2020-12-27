@@ -1,15 +1,15 @@
 (in-package #:cl-user)
 
-(defpackage #:net.mfiano.lisp.algae.noise.open-simplex-4d
+(defpackage #:algae.noise.open-simplex-4d
   (:local-nicknames
-   (#:c #:net.mfiano.lisp.algae.noise.common)
-   (#:rng #:net.mfiano.lisp.algae.rng)
-   (#:u #:net.mfiano.lisp.golden-utils))
+   (#:c #:algae.noise.common)
+   (#:rng #:algae.rng)
+   (#:u #:golden-utils))
   (:use #:cl)
   (:export
    #:sample))
 
-(in-package #:net.mfiano.lisp.algae.noise.open-simplex-4d)
+(in-package #:algae.noise.open-simplex-4d)
 
 (u:define-constant +stretch+ (/ (1- (/ (sqrt 5d0))) 4))
 

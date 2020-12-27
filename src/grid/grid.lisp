@@ -1,4 +1,4 @@
-(in-package #:net.mfiano.lisp.algae.grid)
+(in-package #:algae.grid)
 
 (defclass grid ()
   ((%size :reader size

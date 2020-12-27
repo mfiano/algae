@@ -1,4 +1,4 @@
-(asdf:defsystem #:net.mfiano.lisp.algae
+(asdf:defsystem #:algae
   :description "Assortment of Lisp Game Algorithms and Experiments"
   :author ("Michael Fiano <mail@mfiano.net>")
   :license "MIT"
@@ -9,8 +9,8 @@
   :depends-on (#:cl-pcg
                #:ironclad
                #:global-vars
-               #:net.mfiano.lisp.golden-utils
-               #:net.mfiano.lisp.origin
+               #:golden-utils
+               #:origin
                #:zpng)
   :pathname "src"
   :serial t

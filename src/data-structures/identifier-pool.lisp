@@ -24,10 +24,10 @@
 ;;;; This, in effect, constructs an implicit linked list of the next available
 ;;;; identifiers that can be generated.
 
-(defpackage #:net.mfiano.lisp.algae.data-structures.identifier-pool
+(defpackage #:algae.identifier-pool
   (:local-nicknames
-   (#:da #:net.mfiano.lisp.algae.data-structures.dynamic-array)
-   (#:u #:net.mfiano.lisp.golden-utils))
+   (#:da #:algae.dynamic-array)
+   (#:u #:golden-utils))
   (:use #:cl)
   (:shadow
    #:count
@@ -42,7 +42,7 @@
    #:map
    #:version))
 
-(in-package #:net.mfiano.lisp.algae.data-structures.identifier-pool)
+(in-package #:algae.identifier-pool)
 
 (u:define-constant +id-bits+ 24 :test #'=)
 

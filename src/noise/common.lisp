@@ -1,9 +1,9 @@
 (in-package #:cl-user)
 
-(defpackage #:net.mfiano.lisp.algae.noise.common
+(defpackage #:algae.noise.common
   (:local-nicknames
-   (#:rng #:net.mfiano.lisp.algae.rng)
-   (#:u #:net.mfiano.lisp.golden-utils))
+   (#:rng #:algae.rng)
+   (#:u #:golden-utils))
   (:use #:cl)
   (:export
    #:+perlin-permutation+
@@ -11,7 +11,7 @@
    #:pget
    #:sampler))
 
-(in-package #:net.mfiano.lisp.algae.noise.common)
+(in-package #:algae.noise.common)
 
 (deftype f50 () '(double-float #.(- (expt 2d0 50)) #.(expt 2d0 50)))
 

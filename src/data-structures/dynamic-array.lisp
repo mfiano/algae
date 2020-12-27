@@ -6,9 +6,9 @@
 ;;;; doesn't implement the Common Lisp sequences protocol, nor does it conform
 ;;;; to the usual interface of Common Lisp arrays for PUSH and POP.
 
-(defpackage #:net.mfiano.lisp.algae.data-structures.dynamic-array
+(defpackage #:algae.dynamic-array
   (:local-nicknames
-   (#:u #:net.mfiano.lisp.golden-utils))
+   (#:u #:golden-utils))
   (:use #:cl)
   (:shadow
    #:aref
@@ -28,7 +28,7 @@
    #:pop
    #:push))
 
-(in-package #:net.mfiano.lisp.algae.data-structures.dynamic-array)
+(in-package #:algae.dynamic-array)
 
 (declaim (inline %make-array))
 (defstruct (dynamic-array

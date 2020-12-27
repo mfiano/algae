@@ -1,4 +1,4 @@
 (in-package #:cl-user)
 
-(defpackage #:net.mfiano.lisp.algae
+(defpackage #:algae
   (:use #:cl))
