@@ -13,6 +13,7 @@
   (:shadow
    #:aref
    #:fill-pointer
+   #:find
    #:length
    #:make-array
    #:map
@@ -22,6 +23,7 @@
    #:aref
    #:copy
    #:dynamic-array
+   #:find
    #:length
    #:make-array
    #:map
@@ -115,3 +117,9 @@
   (loop :for i :below (length dynamic-array)
         :for element = (aref dynamic-array i)
         :do (funcall func element)))
+
+(u:fn-> find (dynamic-array t &key (:test function) (:key function)) t)
+(declaim (inline find))
+(defun find (dynamic-array item &key (test #'eql) key)
+  (declare (optimize speed))
+  (cl:find item (data dynamic-array) :key key :test test))
