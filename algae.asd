@@ -23,6 +23,7 @@
      (:file "doubly-linked-list")
      (:file "dynamic-array")
      (:file "identifier-pool")
+     (:file "octree")
      (:file "quad-tree")
      (:file "slot-map")
      (:file "sparse-set")))
