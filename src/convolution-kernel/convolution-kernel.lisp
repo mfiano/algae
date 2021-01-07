@@ -182,7 +182,6 @@
                                     (origin ,object)
                                     ,object)))
               (tg:cell-contains-p ,cell ,constant-name)))
-          (export ',predicate-name)
           (defun ,adder-name (,object)
             (u:when-let ((,cell (if (kernel-p ,object)
                                     (origin ,object)
@@ -191,15 +190,13 @@
                   `((tg:remove-properties
                      ,cell
                      ,@(mapcar (lambda (x) (u:symbolicate '#:+ x '#:+))
-                        remove))))
+                               remove))))
               (tg:add-properties ,cell ,constant-name)))
-          (export ',adder-name)
           (defun ,remover-name (,object)
             (u:when-let ((,cell (if (kernel-p ,object)
                                     (origin ,object)
                                     ,object)))
-              (tg:remove-properties ,cell ,constant-name)))
-          (export ',remover-name))))))
+              (tg:remove-properties ,cell ,constant-name))))))))
 
 (u:fn-> resolve (kernel u:b32 u:b32) (or tg:cell null))
 (u:defun-inline resolve (kernel x y)
