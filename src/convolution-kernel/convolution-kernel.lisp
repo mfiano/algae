@@ -19,6 +19,7 @@
    #:count
    #:define-properties
    #:detect
+   #:do-kernel
    #:flood-fill
    #:find
    #:make-kernel
