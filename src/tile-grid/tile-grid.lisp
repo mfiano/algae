@@ -155,13 +155,13 @@
   (declare (optimize speed))
   (let ((mask (apply #'logior properties)))
     (declare (fixnum mask))
-    (= mask (logand (value cell) mask))))
+    (and cell (= mask (logand (value cell) mask)))))
 
 (define-compiler-macro cell-contains-p (&whole whole cell &rest properties)
   (let ((properties (mapcar #'%constant-integer-p properties)))
     (if (notany #'null properties)
         (let ((mask (apply #'logior properties)))
-          `(= ,mask (logand (value ,cell) ,mask)))
+          `(and ,cell (= ,mask (logand (value ,cell) ,mask))))
         whole)))
 
 (u:fn-> cell-empty-p ((or cell null)) boolean)
