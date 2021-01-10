@@ -104,8 +104,7 @@
             :do (loop :for ,x :of-type u:b32 :from (- ,max-x) :to ,max-x
                       :for ,cell = (when ,,test
                                      (%resolve ,grid ,ox ,oy ,x ,y))
-                      :when ,cell
-                        :do (progn ,@body)))))
+                      :do (progn ,@body)))))
 
 (defmacro %resolve (grid ox oy x y)
   `(tg:get-cell ,grid (+ ,ox ,x) (+ ,oy ,y)))
@@ -133,8 +132,7 @@
            :for ,y :from ,max-y :downto (- ,max-y)
            :do (loop :for ,x :from (- ,max-x) :to ,max-x
                      :for ,cell = (%resolve ,grid ,ox ,oy ,x ,y)
-                     :when ,cell
-                       :do (progn ,@body)))))
+                     :do (progn ,@body)))))
 
 (define-shape :ellipse ()
   (default-mapper
@@ -148,16 +146,13 @@
            (,max-y (max-y ,kernel)))
        (loop :for ,y :from (- ,max-y) :to ,max-y
              :for ,cell = (%resolve ,grid ,ox ,oy 0 ,y)
-             :when ,cell
-               :do (progn ,@body))
+             :do (progn ,@body))
        (loop :for ,x :from (- ,max-x) :below 0
              :for ,cell = (%resolve ,grid ,ox ,oy ,x 0)
-             :when ,cell
-               :do (progn ,@body))
+             :do (progn ,@body))
        (loop :for ,x :from 1 :to ,max-x
              :for ,cell = (%resolve ,grid ,ox ,oy ,x 0)
-             :when ,cell
-               :do (progn ,@body)))))
+             :do (progn ,@body)))))
 
 (define-shape :x ()
   (u:with-gensyms (max x cell1 cell2)
@@ -165,9 +160,8 @@
            :for ,x :from (- ,max) :to ,max
            :for ,cell1 = (%resolve ,grid ,ox ,oy ,x ,x)
            :for ,cell2 = (%resolve ,grid ,ox ,oy (- ,x) ,x)
-           :when ,cell1
-             :do (let ((,cell ,cell1)) ,@body)
-           :when (and ,cell2 (not (zerop ,x)))
+           :do (let ((,cell ,cell1)) ,@body)
+           :when (not (zerop ,x))
              :do (let ((,cell ,cell2)) ,@Body))))
 
 (defun generate-property-functions (name options)
