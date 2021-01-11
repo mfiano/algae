@@ -256,3 +256,12 @@
             :while x
             :do (%test-cell x))
       cells)))
+
+(defmethod tg:cell-contains-p :around ((cell kernel) &rest properties)
+  (apply #'call-next-method (origin cell) properties))
+
+(defmethod tg:add-properties :around ((cell kernel) &rest properties)
+  (apply #'call-next-method (origin cell) properties))
+
+(defmethod tg:remove-properties :around ((cell kernel) &rest properties)
+  (apply #'call-next-method (origin cell) properties))
