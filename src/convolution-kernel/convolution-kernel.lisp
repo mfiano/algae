@@ -17,7 +17,6 @@
    #:align
    #:convolve
    #:count
-   #:define-properties
    #:detect
    #:do-kernel
    #:flood-fill
@@ -119,13 +118,6 @@
        (:ellipse (do/ellipse (,kernel ,cell) ,@body))
        (t (map ,kernel (lambda (,cell) ,@body))))))
 
-(defmacro define-properties (&body body)
-  (let ((properties (mapcar #'u:ensure-list body)))
-    `(progn
-       (tg:define-properties ,@(mapcar #'car properties))
-       ,@(loop :for (name . options) :in properties
-               :append (generate-property-functions name options)))))
-
 (define-shape :rect ()
   (u:with-gensyms (max-x max-y x y)
     `(loop :with ,max-x = (max-x ,kernel)
@@ -164,34 +156,6 @@
            :do (let ((,cell ,cell1)) ,@body)
            :when (not (zerop ,x))
              :do (let ((,cell ,cell2)) ,@Body))))
-
-(defun generate-property-functions (name options)
-  (u:with-gensyms (object cell)
-    (destructuring-bind (&key remove) options
-      (let ((constant-name (u:symbolicate '#:+ name '#:+))
-            (predicate-name (u:symbolicate name '#:-p))
-            (adder-name (u:symbolicate '#:add- name))
-            (remover-name (u:symbolicate '#:remove- name)))
-        `((defun ,predicate-name (,object)
-            (u:when-let ((,cell (if (kernel-p ,object)
-                                    (origin ,object)
-                                    ,object)))
-              (tg:cell-contains-p ,cell ,constant-name)))
-          (defun ,adder-name (,object)
-            (u:when-let ((,cell (if (kernel-p ,object)
-                                    (origin ,object)
-                                    ,object)))
-              ,@(when remove
-                  `((tg:remove-properties
-                     ,cell
-                     ,@(mapcar (lambda (x) (u:symbolicate '#:+ x '#:+))
-                               remove))))
-              (tg:add-properties ,cell ,constant-name)))
-          (defun ,remover-name (,object)
-            (u:when-let ((,cell (if (kernel-p ,object)
-                                    (origin ,object)
-                                    ,object)))
-              (tg:remove-properties ,cell ,constant-name))))))))
 
 (u:fn-> resolve (kernel u:b32 u:b32) (or tg:cell null))
 (u:defun-inline resolve (kernel x y)
