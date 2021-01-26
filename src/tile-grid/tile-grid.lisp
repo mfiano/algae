@@ -17,13 +17,12 @@
    #:cell-empty-p
    #:clear-properties
    #:copy-grid
-   #:copy-properties
-   #:define-properties
    #:do-cells
    #:get-cell
    #:grid
    #:height
    #:make-grid
+   #:properties
    #:remove-properties
    #:reset-grid
    #:width
@@ -39,7 +38,7 @@
             (:copier nil))
   (x 0 :type fixnum)
   (y 0 :type fixnum)
-  (value 0 :type fixnum))
+  (properties (u:dict #'eq) :type hash-table))
 
 (defstruct (grid
             (:constructor %make-grid)
@@ -87,7 +86,7 @@
 (defun reset-grid (grid)
   (declare (optimize speed))
   (do-cells () grid cell
-    (setf (value cell) 0))
+    (clear-properties cell))
   grid)
 
 (u:fn-> copy-grid (grid grid) grid)
@@ -98,43 +97,34 @@
   target)
 
 (defun clear-properties (cell)
-  (setf (value cell) 0))
+  (clrhash (properties cell)))
 
-(defgeneric add-properties (cell &rest properties)
-  (:method (cell &rest properties)
-    (let ((mask (apply #'logior properties)))
-      (setf (value cell) (logior (value cell) mask)))))
+(defgeneric add-properties (cell type &rest properties)
+  (:method (cell type &rest properties)
+    (let ((cell-properties (properties cell)))
+      (unless (u:href cell-properties type)
+        (setf (u:href cell-properties type) (u:dict #'equalp)))
+      (dolist (property properties)
+        (setf (u:href cell-properties type property) property)))))
 
-(defgeneric remove-properties (cell &rest properties)
-  (:method (cell &rest properties)
-    (let ((mask (apply #'logior properties)))
-      (setf (value cell) (logand (value cell) (lognot mask))))))
+(defgeneric remove-properties (cell type &rest properties)
+  (:method (cell type &rest properties)
+    (let ((cell-properties (properties cell)))
+      (when (u:href cell-properties type)
+        (dolist (property properties)
+          (remhash property (u:href cell-properties type)))
+        (when (zerop (hash-table-count (u:href cell-properties type)))
+          (remhash type cell-properties))))))
 
-(defgeneric cell-contains-p (cell &rest properties)
-  (:method (cell &rest properties)
-    (let ((mask (apply #'logior properties)))
-      (and cell (= mask (logand (value cell) mask))))))
+(defgeneric cell-contains-p (cell type property)
+  (:method (cell type property)
+    (when cell
+      (let ((cell-properties (properties cell)))
+        (u:when-let ((type-table (u:href cell-properties type)))
+          (when (u:href type-table property)
+            t))))))
 
 (u:fn-> cell-empty-p ((or cell null)) boolean)
 (u:defun-inline cell-empty-p (cell)
   (declare (optimize speed))
-  (or (null cell) (zerop (value cell))))
-
-(u:fn-> copy-properties (cell cell) cell)
-(defun copy-properties (source target)
-  (declare (optimize speed))
-  (setf (value target) (value source))
-  target)
-
-(defun check-property-count (property-names)
-  (let ((max (integer-length most-positive-fixnum)))
-    (when (> (length property-names) max)
-      `((error "Only up to ~s properties are allowed." ,max)))))
-
-(defmacro define-properties (&body body)
-  `(progn
-     ,@(check-property-count body)
-     ,@(loop :for name :in body
-             :for property = (u:symbolicate '#:+ name '#:+)
-             :for i :from 0
-             :append `((u:define-constant ,property ,(ash 1 i))))))
+  (or (null cell) (zerop (hash-table-count (properties cell)))))

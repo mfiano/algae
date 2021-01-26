@@ -251,11 +251,11 @@
             :do (%test-cell x))
       cells)))
 
-(defmethod tg:cell-contains-p :around ((cell kernel) &rest properties)
-  (apply #'call-next-method (origin cell) properties))
+(defmethod tg:cell-contains-p :around ((cell kernel) type property)
+  (call-next-method (origin cell) type property))
 
-(defmethod tg:add-properties :around ((cell kernel) &rest properties)
-  (apply #'call-next-method (origin cell) properties))
+(defmethod tg:add-properties :around ((cell kernel) type &rest properties)
+  (apply #'call-next-method (origin cell) type properties))
 
-(defmethod tg:remove-properties :around ((cell kernel) &rest properties)
-  (apply #'call-next-method (origin cell) properties))
+(defmethod tg:remove-properties :around ((cell kernel) type &rest properties)
+  (apply #'call-next-method (origin cell) type properties))
