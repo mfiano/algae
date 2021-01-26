@@ -82,8 +82,7 @@
 
 (defun expt (sampler &optional (power 1.0))
   (lambda (&rest args)
-    (1- (cl:* (cl:expt (cl:abs (cl:* (1+ (apply sampler args)) 0.5)) power)
-              2))))
+    (1- (cl:* (cl:expt (cl:abs (cl:* (1+ (apply sampler args)) 0.5)) power) 2))))
 
 (defun power (sampler1 sampler2)
   (lambda (&rest args)
@@ -150,8 +149,7 @@
           :collect (cl:+ (apply displace-sampler args) arg) :into displacements
           :finally (return (apply sampler displacements)))))
 
-(defun fractal (sampler
-                &key (octaves 4) (frequency 1.0) (gain 0.5) (lacunarity 2.0))
+(defun fractal (sampler &key (octaves 4) (frequency 1.0) (gain 0.5) (lacunarity 2.0))
   (lambda (&rest args)
     (loop :with amplitude = 1.0
           :with args = (mapcar (lambda (x) (cl:* x frequency)) args)
@@ -162,9 +160,8 @@
                     amplitude (cl:* amplitude gain))
           :finally (return value))))
 
-(defun ridges (sampler
-               &key (octaves 4) (frequency 1.0) (gain 2.0) (lacunarity 2.0)
-                 (exponent 1.0) (offset 1.0))
+(defun ridges (sampler &key (octaves 4) (frequency 1.0) (gain 2.0) (lacunarity 2.0) (exponent 1.0)
+                         (offset 1.0))
   (let ((weights (make-array octaves :element-type 'single-float)))
     (loop :for i :below octaves
           :for frequency = 1.0 :then (cl:* frequency lacunarity)
@@ -181,8 +178,7 @@
                   args (mapcar (lambda (x) (cl:* x lacunarity)) args))))
         (1- (cl:* value 1.25))))))
 
-(defun billow (sampler
-               &key (octaves 4) (frequency 1.0) (gain 0.5) (lacunarity 2.0))
+(defun billow (sampler &key (octaves 4) (frequency 1.0) (gain 0.5) (lacunarity 2.0))
   (lambda (&rest args)
     (loop :with amplitude = 1.0
           :with args = (mapcar (lambda (x) (cl:* x frequency)) args)
@@ -194,9 +190,7 @@
           :finally (return (cl:+ value 0.5)))))
 
 (defun turbulence (sampler &key (frequency 1.0) (power 1.0) (roughness 3))
-  (let ((distortion (fractal (make-sampler :perlin-3d)
-                             :octaves roughness
-                             :frequency frequency)))
+  (let ((distortion (fractal (make-sampler :perlin-3d) :octaves roughness :frequency frequency)))
     (lambda (&rest args)
       (destructuring-bind (x &optional (y 0d0) (z 0d0) (w 0d0)) args
         (let* ((x0 (cl:+ x 0.1894226))
@@ -221,12 +215,8 @@
                (dw (cl:+ w (cl:* (sample distortion x3 y3 z3 w3) power))))
           (funcall sampler dx dy dz dw))))))
 
-(defun write-image (out-file sampler
-                    &key (width 1024) (height 1024) (r 1.0) (g 1.0) (b 1.0))
-  (let* ((png (make-instance 'zpng:png
-                             :color-type :truecolor
-                             :width width
-                             :height height))
+(defun write-image (out-file sampler &key (width 1024) (height 1024) (r 1.0) (g 1.0) (b 1.0))
+  (let* ((png (make-instance 'zpng:png :color-type :truecolor :width width :height height))
          (data (zpng:data-array png)))
     (dotimes (y height)
       (dotimes (x width)

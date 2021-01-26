@@ -18,17 +18,14 @@
 (u:define-constant +scale+ (/ 30d0))
 
 (u:define-constant +gradients+
-    (let ((data '(3 1 1 1 1 3 1 1 1 1 3 1 1 1 1 3 -3 1 1 1 -1 3 1 1 -1 1 3 1 -1
-                  1 1 3 3 -1 1 1 1 -3 1 1 1 -1 3 1 1 -1 1 3 -3 -1 1 1 -1 -3 1 1
-                  -1 -1 3 1 -1 -1 1 3 3 1 -1 1 1 3 -1 1 1 1 -3 1 1 1 -1 3 -3 1
-                  -1 1 -1 3 -1 1 -1 1 -3 1 -1 1 -1 3 3 -1 -1 1 1 -3 -1 1 1 -1 -3
-                  1 1 -1 -1 3 -3 -1 -1 1 -1 -3 -1 1 -1 -1 -3 1 -1 -1 -1 3 3 1 1
-                  -1 1 3 1 -1 1 1 3 -1 1 1 1 -3 -3 1 1 -1 -1 3 1 -1 -1 1 3 -1 -1
-                  1 1 -3 3 -1 1 -1 1 -3 1 -1 1 -1 3 -1 1 -1 1 -3 -3 -1 1 -1 -1
-                  -3 1 -1 -1 -1 3 -1 -1 -1 1 -3 3 1 -1 -1 1 3 -1 -1 1 1 -3 -1 1
-                  1 -1 -3 -3 1 -1 -1 -1 3 -1 -1 -1 1 -3 -1 -1 1 -1 -3 3 -1 -1 -1
-                  1 -3 -1 -1 1 -1 -3 -1 1 -1 -1 -3 -3 -1 -1 -1 -1 -3 -1 -1 -1 -1
-                  -3 -1 -1 -1 -1 -3)))
+    (let ((data '(3 1 1 1 1 3 1 1 1 1 3 1 1 1 1 3 -3 1 1 1 -1 3 1 1 -1 1 3 1 -1 1 1 3 3 -1 1 1 1 -3 1
+                  1 1 -1 3 1 1 -1 1 3 -3 -1 1 1 -1 -3 1 1 -1 -1 3 1 -1 -1 1 3 3 1 -1 1 1 3 -1 1 1 1
+                  -3 1 1 1 -1 3 -3 1 1 1 -1 3 -1 1 -1 1 -3 1 -1 1 -1 3 3 -1 -1 1 1 -3 -1 1 1 -1 -3 1
+                  1 -1 -1 3 -3 -1 -1 1 -1 -3 -1 1 -1 -1 -3 1 -1 -1 -1 3 3 1 1 -1 1 3 1 -1 1 1 3 -1 1
+                  1 1 -3 -3 1 1 -1 -1 3 1 -1 -1 1 3 -1 -1 1 1 -3 3 -1 1 -1 1 -3 1 -1 1 -1 3 -1 1 -1 1
+                  -3 -3 -1 1 -1 -1 3 1 -1 -1 -1 3 -1 -1 -1 1 -3 3 1 -1 -1 1 3 -1 -1 1 1 -3 -1 1 1 -1
+                  -3 -3 1 -1 -1 -1 3 -1 -1 -1 1 -3 -1 -1 1 -1 -3 3 -1 -1 -1 1 -3 -1 -1 1 -1 -3 -1 1
+                  -1 -1 -3 -3 -1 -1 -1 -1 -3 -1 -1 -1 -1 3 -1 -1 -1 -1 -3)))
       (make-array 256 :element-type 'fixnum :initial-contents data))
   :test #'equalp)
 
@@ -164,9 +161,7 @@
 (u:defun-inline contribute (state dx dy dz dw xsb ysb zsb wsb)
   (let ((a (- 2 (* dx dx) (* dy dy) (* dz dz) (* dw dw))))
     (when (plusp a)
-      (incf (value state)
-            (* (expt a 4)
-               (extrapolate (table state) xsb ysb zsb wsb dx dy dz dw))))
+      (incf (value state) (* (expt a 4) (extrapolate (table state) xsb ysb zsb wsb dx dy dz dw))))
     (values)))
 
 (defun contribute1 (state)
@@ -174,95 +169,65 @@
         (ysb (ysb state))
         (zsb (zsb state))
         (wsb (wsb state)))
-    (contribute state (dx0 state) (dy0 state) (dz0 state) (dw0 state) xsb ysb
-                zsb wsb)
-    (contribute state (dx1 state) (dy1 state) (dz1 state) (dw1 state) (1+ xsb)
-                ysb zsb wsb)
-    (contribute state (dx2 state) (dy2 state) (dz2 state) (dw2 state) xsb
-                (1+ ysb) zsb wsb)
-    (contribute state (dx3 state) (dy3 state) (dz3 state) (dw3 state) xsb ysb
-                (1+ zsb) wsb)
-    (contribute state (dx4 state) (dy4 state) (dz4 state) (dw4 state) xsb ysb
-                zsb (1+ wsb))))
+    (contribute state (dx0 state) (dy0 state) (dz0 state) (dw0 state) xsb ysb zsb wsb)
+    (contribute state (dx1 state) (dy1 state) (dz1 state) (dw1 state) (1+ xsb) ysb zsb wsb)
+    (contribute state (dx2 state) (dy2 state) (dz2 state) (dw2 state) xsb (1+ ysb) zsb wsb)
+    (contribute state (dx3 state) (dy3 state) (dz3 state) (dw3 state) xsb ysb (1+ zsb) wsb)
+    (contribute state (dx4 state) (dy4 state) (dz4 state) (dw4 state) xsb ysb zsb (1+ wsb))))
 
 (defun contribute2 (state)
   (let ((xsb (xsb state))
         (ysb (ysb state))
         (zsb (zsb state))
         (wsb (wsb state)))
-    (contribute state (dx4 state) (dy4 state) (dz4 state) (dw4 state) (1+ xsb)
-                (1+ ysb) (1+ zsb) wsb)
-    (contribute state (dx3 state) (dy3 state) (dz3 state) (dw3 state) (1+ xsb)
-                (1+ ysb) zsb (1+ wsb))
-    (contribute state (dx2 state) (dy2 state) (dz2 state) (dw2 state) (1+ xsb)
-                ysb (1+ zsb) (1+ wsb))
-    (contribute state (dx1 state) (dy1 state) (dz1 state) (dw1 state) xsb
-                (1+ ysb) (1+ zsb) (1+ wsb))
-    (contribute state (dx0 state) (dy0 state) (dz0 state) (dw0 state) (1+ xsb)
-                (1+ ysb) (1+ zsb) (1+ wsb))))
+    (contribute state (dx4 state) (dy4 state) (dz4 state) (dw4 state) (1+ xsb) (1+ ysb) (1+ zsb) wsb)
+    (contribute state (dx3 state) (dy3 state) (dz3 state) (dw3 state) (1+ xsb) (1+ ysb) zsb (1+ wsb))
+    (contribute state (dx2 state) (dy2 state) (dz2 state) (dw2 state) (1+ xsb) ysb (1+ zsb) (1+ wsb))
+    (contribute state (dx1 state) (dy1 state) (dz1 state) (dw1 state) xsb (1+ ysb) (1+ zsb) (1+ wsb))
+    (contribute state (dx0 state) (dy0 state) (dz0 state) (dw0 state) (1+ xsb) (1+ ysb) (1+ zsb)
+                (1+ wsb))))
 
 (defun contribute3 (state)
   (let ((xsb (xsb state))
         (ysb (ysb state))
         (zsb (zsb state))
         (wsb (wsb state)))
-    (contribute state (dx1 state) (dy1 state) (dz1 state) (dw1 state) (1+ xsb)
-                ysb zsb wsb)
-    (contribute state (dx2 state) (dy2 state) (dz2 state) (dw2 state) xsb
-                (1+ ysb) zsb wsb)
-    (contribute state (dx3 state) (dy3 state) (dz3 state) (dw3 state) xsb ysb
-                (1+ zsb) wsb)
-    (contribute state (dx4 state) (dy4 state) (dz4 state) (dw4 state) xsb ysb
-                zsb (1+ wsb))
-    (contribute state (dx5 state) (dy5 state) (dz5 state) (dw5 state) (1+ xsb)
-                (1+ ysb) zsb wsb)
-    (contribute state (dx6 state) (dy6 state) (dz6 state) (dw6 state) (1+ xsb)
-                ysb (1+ zsb) wsb)
-    (contribute state (dx7 state) (dy7 state) (dz7 state) (dw7 state) (1+ xsb)
-                ysb zsb (1+ wsb))
-    (contribute state (dx8 state) (dy8 state) (dz8 state) (dw8 state) xsb
-                (1+ ysb) (1+ zsb) wsb)
-    (contribute state (dx9 state) (dy9 state) (dz9 state) (dw9 state) xsb
-                (1+ ysb) zsb (1+ wsb))
-    (contribute state (dx10 state) (dy10 state) (dz10 state) (dw10 state) xsb
-                ysb (1+ zsb) (1+ wsb))))
+    (contribute state (dx1 state) (dy1 state) (dz1 state) (dw1 state) (1+ xsb) ysb zsb wsb)
+    (contribute state (dx2 state) (dy2 state) (dz2 state) (dw2 state) xsb (1+ ysb) zsb wsb)
+    (contribute state (dx3 state) (dy3 state) (dz3 state) (dw3 state) xsb ysb (1+ zsb) wsb)
+    (contribute state (dx4 state) (dy4 state) (dz4 state) (dw4 state) xsb ysb zsb (1+ wsb))
+    (contribute state (dx5 state) (dy5 state) (dz5 state) (dw5 state) (1+ xsb) (1+ ysb) zsb wsb)
+    (contribute state (dx6 state) (dy6 state) (dz6 state) (dw6 state) (1+ xsb) ysb (1+ zsb) wsb)
+    (contribute state (dx7 state) (dy7 state) (dz7 state) (dw7 state) (1+ xsb) ysb zsb (1+ wsb))
+    (contribute state (dx8 state) (dy8 state) (dz8 state) (dw8 state) xsb (1+ ysb) (1+ zsb) wsb)
+    (contribute state (dx9 state) (dy9 state) (dz9 state) (dw9 state) xsb (1+ ysb) zsb (1+ wsb))
+    (contribute state (dx10 state) (dy10 state) (dz10 state) (dw10 state) xsb ysb (1+ zsb)
+                (1+ wsb))))
 
 (defun contribute4 (state)
   (let ((xsb (xsb state))
         (ysb (ysb state))
         (zsb (zsb state))
         (wsb (wsb state)))
-    (contribute state (dx4 state) (dy4 state) (dz4 state) (dw4 state) (1+ xsb)
-                (1+ ysb) (1+ zsb) wsb)
-    (contribute state (dx3 state) (dy3 state) (dz3 state) (dw3 state) (1+ xsb)
-                (1+ ysb) zsb (1+ wsb))
-    (contribute state (dx2 state) (dy2 state) (dz2 state) (dw2 state) (1+ xsb)
-                ysb (1+ zsb) (1+ wsb))
-    (contribute state (dx1 state) (dy1 state) (dz1 state) (dw1 state) xsb
-                (1+ ysb) (1+ zsb) (1+ wsb))
-    (contribute state (dx5 state) (dy5 state) (dz5 state) (dw5 state) (1+ xsb)
-                (1+ ysb) zsb wsb)
-    (contribute state (dx6 state) (dy6 state) (dz6 state) (dw6 state) (1+ xsb)
-                ysb (1+ zsb) wsb)
-    (contribute state (dx7 state) (dy7 state) (dz7 state) (dw7 state) (1+ xsb)
-                ysb zsb (1+ wsb))
-    (contribute state (dx8 state) (dy8 state) (dz8 state) (dw8 state) xsb
-                (1+ ysb) (1+ zsb) wsb)
-    (contribute state (dx9 state) (dy9 state) (dz9 state) (dw9 state) xsb
-                (1+ ysb) zsb (1+ wsb))
-    (contribute state (dx10 state) (dy10 state) (dz10 state) (dw10 state) xsb
-                ysb (1+ zsb) (1+ wsb))))
+    (contribute state (dx4 state) (dy4 state) (dz4 state) (dw4 state) (1+ xsb) (1+ ysb) (1+ zsb) wsb)
+    (contribute state (dx3 state) (dy3 state) (dz3 state) (dw3 state) (1+ xsb) (1+ ysb) zsb (1+ wsb))
+    (contribute state (dx2 state) (dy2 state) (dz2 state) (dw2 state) (1+ xsb) ysb (1+ zsb) (1+ wsb))
+    (contribute state (dx1 state) (dy1 state) (dz1 state) (dw1 state) xsb (1+ ysb) (1+ zsb) (1+ wsb))
+    (contribute state (dx5 state) (dy5 state) (dz5 state) (dw5 state) (1+ xsb) (1+ ysb) zsb wsb)
+    (contribute state (dx6 state) (dy6 state) (dz6 state) (dw6 state) (1+ xsb) ysb (1+ zsb) wsb)
+    (contribute state (dx7 state) (dy7 state) (dz7 state) (dw7 state) (1+ xsb) ysb zsb (1+ wsb))
+    (contribute state (dx8 state) (dy8 state) (dz8 state) (dw8 state) xsb (1+ ysb) (1+ zsb) wsb)
+    (contribute state (dx9 state) (dy9 state) (dz9 state) (dw9 state) xsb (1+ ysb) zsb (1+ wsb))
+    (contribute state (dx10 state) (dy10 state) (dz10 state) (dw10 state) xsb ysb (1+ zsb)
+                (1+ wsb))))
 
 (defun contribute5 (state)
-  (contribute state (dx-ext0 state) (dy-ext0 state) (dz-ext0 state)
-              (dw-ext0 state) (xsv-ext0 state) (ysv-ext0 state) (zsv-ext0 state)
-              (wsv-ext0 state))
-  (contribute state (dx-ext1 state) (dy-ext1 state) (dz-ext1 state)
-              (dw-ext1 state) (xsv-ext1 state) (ysv-ext1 state) (zsv-ext1 state)
-              (wsv-ext1 state))
-  (contribute state (dx-ext2 state) (dy-ext2 state) (dz-ext2 state)
-              (dw-ext2 state) (xsv-ext2 state) (ysv-ext2 state) (zsv-ext2 state)
-              (wsv-ext2 state)))
+  (contribute state (dx-ext0 state) (dy-ext0 state) (dz-ext0 state) (dw-ext0 state) (xsv-ext0 state)
+              (ysv-ext0 state) (zsv-ext0 state) (wsv-ext0 state))
+  (contribute state (dx-ext1 state) (dy-ext1 state) (dz-ext1 state) (dw-ext1 state) (xsv-ext1 state)
+              (ysv-ext1 state) (zsv-ext1 state) (wsv-ext1 state))
+  (contribute state (dx-ext2 state) (dy-ext2 state) (dz-ext2 state) (dw-ext2 state) (xsv-ext2 state)
+              (ysv-ext2 state) (zsv-ext2 state) (wsv-ext2 state)))
 
 (defun in1 (state)
   (let* ((point-a 1)

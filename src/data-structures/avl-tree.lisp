@@ -68,10 +68,7 @@
                (declare (function sorter))
                (when (node-p node)
                  (when (or (null (%check (node-left node) sorter))
-                           (and previous
-                                (funcall sorter
-                                         (node-key node)
-                                         (node-key previous))))
+                           (and previous (funcall sorter (node-key node) (node-key previous))))
                    (return-from %check))
                  (setf previous node)
                  (return-from %check
@@ -98,20 +95,14 @@
     (clrhash (node-data (tree-sentinel tree)))
     tree))
 
-(u:fn-> make-tree (&key (:item-type symbol)
-                        (:key function)
-                        (:sort function)
-                        (:hash-test function))
+(u:fn-> make-tree (&key (:item-type symbol) (:key function) (:sort function) (:hash-test function))
         tree)
 (defun make-tree (&key item-type (key #'identity) (sort #'<) (hash-test #'eql))
   (declare (optimize speed))
   (unless item-type
     (error "Must specify :ITEM-TYPE denoting the type of items stored in the ~
             tree."))
-  (let* ((tree (%make-tree :item-type item-type
-                           :key key
-                           :sorter sort
-                           :hash-test hash-test))
+  (let* ((tree (%make-tree :item-type item-type :key key :sorter sort :hash-test hash-test))
          (sentinel (make-node tree nil)))
     (setf (tree-sentinel tree) sentinel
           (node-left sentinel) sentinel
@@ -126,9 +117,7 @@
                              :key (or key (tree-key tree))
                              :sort (or sort (tree-sorter tree))
                              :hash-test (tree-hash-test tree))))
-    (walk tree
-          (lambda (x)
-            (insert new-tree x)))
+    (walk tree (lambda (x) (insert new-tree x)))
     new-tree))
 
 (u:fn-> walk (tree function) null)
@@ -213,12 +202,15 @@
     (rotate/left z)
     (rotate/right node)
     (case new-root-balance
-      (-1 (setf (node-balance-factor node) 1
-                (node-balance-factor z) 0))
-      (0 (setf (node-balance-factor node) 0
-               (node-balance-factor z) 0))
-      (1 (setf (node-balance-factor node) 0
-               (node-balance-factor z) -1)))
+      (-1
+       (setf (node-balance-factor node) 1
+             (node-balance-factor z) 0))
+      (0
+       (setf (node-balance-factor node) 0
+             (node-balance-factor z) 0))
+      (1
+       (setf (node-balance-factor node) 0
+             (node-balance-factor z) -1)))
     (setf (node-balance-factor new-root) 0)
     new-root))
 
@@ -231,12 +223,15 @@
     (rotate/right z)
     (rotate/left node)
     (case new-root-balance
-      (-1 (setf (node-balance-factor node) 0
-                (node-balance-factor z) 1))
-      (0 (setf (node-balance-factor node) 0
-               (node-balance-factor z) 0))
-      (1 (setf (node-balance-factor node) -1
-               (node-balance-factor z) 0)))
+      (-1
+       (setf (node-balance-factor node) 0
+             (node-balance-factor z) 1))
+      (0
+       (setf (node-balance-factor node) 0
+             (node-balance-factor z) 0))
+      (1
+       (setf (node-balance-factor node) -1
+             (node-balance-factor z) 0)))
     (setf (node-balance-factor new-root) 0)
     new-root))
 
@@ -248,26 +243,32 @@
         :while (node-p node)
         :do (if (eq child (node-left node))
                 (ecase (decf (node-balance-factor node))
-                  (0 (return))
-                  (-1 (setf child node))
-                  (-2 (let ((node-parent (node-parent node))
-                            (new-root (if (= (node-balance-factor child) 1)
-                                          (rotate/left-right node)
-                                          (rotate/right node))))
-                        (if (node-p node-parent)
-                            (return)
-                            (return new-root)))))
+                  (0
+                   (return))
+                  (-1
+                   (setf child node))
+                  (-2
+                   (let ((node-parent (node-parent node))
+                         (new-root (if (= (node-balance-factor child) 1)
+                                       (rotate/left-right node)
+                                       (rotate/right node))))
+                     (if (node-p node-parent)
+                         (return)
+                         (return new-root)))))
                 (ecase (incf (node-balance-factor node))
-                  (0 (return))
-                  (1 (setf child node))
-                  (2 (let ((node-parent (node-parent node))
-                           (new-root (if (= (node-balance-factor child) -1)
-                                         (rotate/right-left node)
-                                         (rotate/left node))))
-                       (setf (node-parent new-root) node-parent)
-                       (if (node-p node-parent)
-                           (return)
-                           (return new-root))))))))
+                  (0
+                   (return))
+                  (1
+                   (setf child node))
+                  (2
+                   (let ((node-parent (node-parent node))
+                         (new-root (if (= (node-balance-factor child) -1)
+                                       (rotate/right-left node)
+                                       (rotate/left node))))
+                     (setf (node-parent new-root) node-parent)
+                     (if (node-p node-parent)
+                         (return)
+                         (return new-root))))))))
 
 (u:fn-> insert (tree t) node)
 (defun insert (tree item)
@@ -307,32 +308,38 @@
         :do (if (and (or (not first-time) (and first-time (eq direction :left)))
                      (eq child (node-left node)))
                 (ecase (incf (node-balance-factor node))
-                  (0 (setf child node))
-                  (1 (return))
-                  (2 (let ((node-parent (node-parent node))
-                           (right-child (node-right node)))
-                       (if (= (node-balance-factor right-child) -1)
-                           (setf child (rotate/right-left node))
-                           (setf child (rotate/left node)))
-                       (setf (node-parent child) node-parent)
-                       (cond
-                         ((not (node-p node-parent))
-                          (return child))
-                         ((= (node-balance-factor right-child) -1)
-                          (return))))))
+                  (0
+                   (setf child node))
+                  (1
+                   (return))
+                  (2
+                   (let ((node-parent (node-parent node))
+                         (right-child (node-right node)))
+                     (if (= (node-balance-factor right-child) -1)
+                         (setf child (rotate/right-left node))
+                         (setf child (rotate/left node)))
+                     (setf (node-parent child) node-parent)
+                     (cond
+                       ((not (node-p node-parent))
+                        (return child))
+                       ((= (node-balance-factor right-child) -1)
+                        (return))))))
                 (ecase (decf (node-balance-factor node))
-                  (0 (setf child node))
-                  (-1 (return))
-                  (-2 (let ((node-parent (node-parent node))
-                            (left-child (node-left node)))
-                        (if (= (node-balance-factor left-child) 1)
-                            (setf child (rotate/left-right node))
-                            (setf child (rotate/right node)))
-                        (cond
-                          ((not (node-p node-parent))
-                           (return child))
-                          ((= (node-balance-factor left-child) 1)
-                           (return)))))))))
+                  (0
+                   (setf child node))
+                  (-1
+                   (return))
+                  (-2
+                   (let ((node-parent (node-parent node))
+                         (left-child (node-left node)))
+                     (if (= (node-balance-factor left-child) 1)
+                         (setf child (rotate/left-right node))
+                         (setf child (rotate/right node)))
+                     (cond
+                       ((not (node-p node-parent))
+                        (return child))
+                       ((= (node-balance-factor left-child) 1)
+                        (return)))))))))
 
 (u:fn-> delete (tree t) (or node null))
 (defun delete (tree item)
@@ -343,9 +350,7 @@
                  (let ((replacement (min (node-right node))))
                    (setf (node-data node) (node-data replacement))
                    (%delete replacement))
-                 (let ((direction (if (eq node (node-left (node-parent node)))
-                                      :left
-                                      :right)))
+                 (let ((direction (if (eq node (node-left (node-parent node))) :left :right)))
                    (cond ((node-p (node-left node))
                           (transplant node (node-left node))
                           (delete-rebalance (node-left node) direction))

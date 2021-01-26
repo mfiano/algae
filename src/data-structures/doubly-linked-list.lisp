@@ -88,9 +88,7 @@ the list. It defaults to `#'EQL`.
   (loop :for node = (or start (if from-end (tail list) (head list)))
           :then (if from-end (previous node) (next node))
         :while node
-        :when (funcall test
-                       (funcall key (value node))
-                       (funcall key value))
+        :when (funcall test (funcall key (value node)) (funcall key value))
           :do (return node)
         :when (eq node end)
           :do (return)))
@@ -150,10 +148,6 @@ object to delete if `OBJECT` is not a NODE."
              (values list t))))
     (if (node-p object)
         (%delete list object)
-        (u:if-let ((node (find list
-                               object
-                               :key key
-                               :test test
-                               :from-end from-end)))
+        (u:if-let ((node (find list object :key key :test test :from-end from-end)))
           (%delete list node)
           (values list nil)))))

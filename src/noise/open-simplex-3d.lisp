@@ -18,26 +18,22 @@
 (u:define-constant +scale+ (/ 103d0))
 
 (u:define-constant +permutation+
-    (let ((data '(21 48 51 57 54 45 33 39 27 69 0 15 6 51 21 27 60 36 21 18 63
-                  66 24 9 39 0 63 30 69 66 18 12 21 0 54 9 0 6 15 42 66 36 9 33
-                  63 33 33 24 27 27 27 48 63 15 24 45 18 60 15 48 9 0 60 21 6 63
-                  69 42 57 0 9 66 15 6 42 45 33 45 39 6 36 57 39 42 12 27 60 51
-                  21 66 15 48 12 18 69 18 51 3 45 51 3 0 24 3 51 12 36 57 48 51
-                  54 3 24 12 45 30 60 60 45 42 60 12 39 18 15 54 9 48 12 3 30 30
-                  12 9 15 30 42 9 66 18 45 30 39 60 45 42 33 33 69 48 30 51 42
-                  63 12 54 21 45 6 63 69 24 24 6 60 30 57 66 15 27 15 33 69 57
-                  12 27 27 66 45 39 57 6 36 42 21 51 24 48 30 51 48 24 6 18 3 36
-                  33 30 6 3 66 54 0 36 69 33 54 3 27 9 3 57 27 42 69 33 3 0 66
-                  21 39 21 30 39 48 36 36 24 57 3 6 63 21 12 18 42 54 60 39 63
-                  18 54 57 15 0 0 9 63 24 9 18 54 69 39 36 36)))
+    (let ((data '(21 48 51 57 54 45 33 39 27 69 0 15 6 51 21 27 60 36 21 18 63 66 24 9 39 0 63 30 69
+                  66 18 12 21 0 54 9 0 6 15 42 66 36 9 33 63 33 33 24 27 27 27 48 63 15 24 45 18 60
+                  15 48 9 0 60 21 6 63 69 42 57 0 9 66 15 6 42 45 33 45 39 6 36 57 39 42 12 27 60 51
+                  21 66 15 48 12 18 69 18 51 3 45 51 3 0 24 3 51 12 36 57 48 51 54 3 24 12 45 30 60
+                  60 45 42 60 12 39 18 15 54 9 48 12 3 30 30 12 9 15 30 42 9 66 18 45 30 39 60 45 42
+                  33 33 69 48 30 51 42 63 12 54 21 45 6 63 69 24 24 6 60 30 57 66 15 27 15 33 69 57
+                  12 27 27 66 45 39 57 6 36 42 21 51 24 48 30 51 48 24 6 18 3 36 33 30 6 3 66 54 0 36
+                  69 33 54 3 27 9 3 57 27 42 69 33 3 0 66 21 39 21 30 39 48 36 36 24 57 3 6 63 21 12
+                  18 42 54 60 39 63 18 54 57 15 0 0 9 63 24 9 18 54 69 39 36 36)))
       (make-array 256 :element-type 'u:ub8 :initial-contents data))
   :test #'equalp)
 
 (u:define-constant +gradients+
-    (let ((data '(-11 4 4 -4 11 4 -4 4 11 11 4 4 4 11 4 4 4 11 -11 -4 4 -4 -11 4
-                  -4 -4 11 11 -4 4 4 -11 4 4 -4 11 -11 4 -4 -4 11 -4 -4 4 -11 11
-                  4 -4 4 11 -4 4 4 -11 -11 -4 -4 -4 -11 -4 -4 -4 -11 11 -4 -4 4
-                  -11 -4 4 -4 -11)))
+    (let ((data '(-11 4 4 -4 11 4 -4 4 11 11 4 4 4 11 4 4 4 11 -11 -4 4 -4 -11 4 -4 -4 11 11 -4 4 4
+                  -11 4 4 -4 11 -11 4 -4 -4 11 -4 -4 4 -11 11 4 -4 4 11 -4 4 4 -11 -11 -4 -4 -4 -11
+                  -4 -4 -4 -11 11 -4 -4 4 11 -4 4 -4 -11)))
       (make-array 72 :element-type 'fixnum :initial-contents data))
   :test #'equalp)
 
@@ -149,8 +145,7 @@
     (contribute state (dx3 state) (dy3 state) (dz3 state) (1+ xsb) (1+ ysb) zsb)
     (contribute state (dx2 state) (dy2 state) (dz2 state) (1+ xsb) ysb (1+ zsb))
     (contribute state (dx1 state) (dy1 state) (dz1 state) xsb (1+ ysb) (1+ zsb))
-    (contribute state (dx0 state) (dy0 state) (dz0 state) (1+ xsb) (1+ ysb)
-                (1+ zsb))))
+    (contribute state (dx0 state) (dy0 state) (dz0 state) (1+ xsb) (1+ ysb) (1+ zsb))))
 
 (defun contribute3 (state)
   (let ((xsb (xsb state))
@@ -161,14 +156,13 @@
     (contribute state (dx3 state) (dy3 state) (dz3 state) xsb ysb (1+ zsb))
     (contribute state (dx4 state) (dy4 state) (dz4 state) (1+ xsb) (1+ ysb) zsb)
     (contribute state (dx5 state) (dy5 state) (dz5 state) (1+ xsb) ysb (1+ zsb))
-    (contribute state (dx6 state) (dy6 state) (dz6 state) xsb (1+ ysb)
-                (1+ zsb))))
+    (contribute state (dx6 state) (dy6 state) (dz6 state) xsb (1+ ysb) (1+ zsb))))
 
 (defun contribute4 (state)
-  (contribute state (dx-ext0 state) (dy-ext0 state) (dz-ext0 state)
-              (xsv-ext0 state) (ysv-ext0 state) (zsv-ext0 state))
-  (contribute state (dx-ext1 state) (dy-ext1 state) (dz-ext1 state)
-              (xsv-ext1 state) (ysv-ext1 state) (zsv-ext1 state)))
+  (contribute state (dx-ext0 state) (dy-ext0 state) (dz-ext0 state) (xsv-ext0 state) (ysv-ext0 state)
+              (zsv-ext0 state))
+  (contribute state (dx-ext1 state) (dy-ext1 state) (dz-ext1 state) (xsv-ext1 state) (ysv-ext1 state)
+              (zsv-ext1 state)))
 
 (defun in1 (state)
   (let* ((point-a 1)

@@ -44,18 +44,13 @@
 
 (u:define-printer (dynamic-array stream :type nil)
   (format stream "~{~a~^ ~}"
-          (coerce (subseq (data dynamic-array) 0 (fill-pointer dynamic-array))
-                  'list)))
+          (coerce (subseq (data dynamic-array) 0 (fill-pointer dynamic-array)) 'list)))
 
 (defun make-array (&key (size 0) (capacity 128) (element-type t)
                      initial-element)
   (assert (<= size capacity))
-  (let ((data (cl:make-array capacity
-                             :element-type element-type
-                             :initial-element initial-element)))
-    (%make-array :data data
-                 :initial-element initial-element
-                 :fill-pointer size)))
+  (let ((data (cl:make-array capacity :element-type element-type :initial-element initial-element)))
+    (%make-array :data data :initial-element initial-element :fill-pointer size)))
 
 (u:fn-> copy (dynamic-array) dynamic-array)
 (defun copy (dynamic-array)

@@ -26,8 +26,7 @@
 
 (in-package #:algae.cubic-bezier)
 
-(u:define-constant +matrix+
-    (dm4:mat -1 3 -3 1 3 -6 3 0 -3 3 0 0 1 0 0 0) :test #'equalp)
+(u:define-constant +matrix+ (dm4:mat -1 3 -3 1 3 -6 3 0 -3 3 0 0 1 0 0 0) :test #'equalp)
 
 (defstruct (bezier-curve
             (:constructor %make-curve)
@@ -36,8 +35,7 @@
             (:copier nil))
   (divisions 100 :type fixnum)
   (geometry (make-array 0 :adjustable t :fill-pointer 0) :type vector)
-  (arc-lengths (make-array 0 :element-type 'single-float)
-   :type (simple-array single-float (*)))
+  (arc-lengths (make-array 0 :element-type 'single-float) :type (simple-array single-float (*)))
   (arc-lengths-update nil :type boolean))
 
 (u:fn-> estimate-arc-lengths (bezier-curve) null)
@@ -81,9 +79,8 @@
         :for (a b c d) :on points :by #'cdddr
         :for index :of-type fixnum :from 0
         :when (< index segment-count)
-          :do (vector-push-extend
-               (dm4:mat (m4:mat (v4:vec a) (v4:vec b) (v4:vec c) (v4:vec d)))
-               (geometry spline)))
+          :do (vector-push-extend (dm4:mat (m4:mat (v4:vec a) (v4:vec b) (v4:vec c) (v4:vec d)))
+                                  (geometry spline)))
   (setf (arc-lengths-update spline) t)
   (values))
 
@@ -103,9 +100,7 @@
     (verify-points points)
     (let* ((geometry (geometry spline))
            (last-index (1- (length geometry)))
-           (shared-point (v3:vec
-                          (dv3:vec
-                           (dm4:get-column (aref geometry last-index) 3)))))
+           (shared-point (v3:vec (dv3:vec (dm4:get-column (aref geometry last-index) 3)))))
       (add-geometry spline (cons shared-point points))
       (values))))
 
@@ -142,8 +137,7 @@
            (loop :with high = (1- arc-length-count)
                  :with low = 0
                  :while (< low high)
-                 :for index :of-type fixnum = 0
-                   :then (+ low (floor (- high low) 2))
+                 :for index :of-type fixnum = 0 :then (+ low (floor (- high low) 2))
                  :do (if (< (aref arc-lengths index) target)
                          (setf low (1+ index))
                          (setf high index))
@@ -179,26 +173,20 @@
       (setf x 1))
     (v3:vec
      (dv3:vec
-      (dm4:*v4 (dm4:* (aref geometry index) +matrix+)
-               (dv4:vec (* x x x) (* x x) x 1))))))
+      (dm4:*v4 (dm4:* (aref geometry index) +matrix+) (dv4:vec (* x x x) (* x x) x 1))))))
 
 (u:fn-> collect-points (bezier-curve fixnum &key (:even-spacing boolean)) list)
 (defun collect-points (spline count &key even-spacing)
   (declare (optimize speed))
   (loop :for i :below count
-        :collect (evaluate spline
-                           (/ i (float (1- count) 1f0))
-                           :even-spacing even-spacing)))
+        :collect (evaluate spline (/ i (float (1- count) 1f0)) :even-spacing even-spacing)))
 
-(u:fn-> collect-segments (bezier-curve fixnum &key (:even-spacing boolean))
-        list)
+(u:fn-> collect-segments (bezier-curve fixnum &key (:even-spacing boolean)) list)
 (defun collect-segments (spline count &key even-spacing)
   (declare (optimize speed))
   (loop :for i :from 1 :to count
         :for p1 = (evaluate spline 0f0 :even-spacing even-spacing) :then p2
-        :for p2 = (evaluate spline
-                            (/ i (float count 1f0))
-                            :even-spacing even-spacing)
+        :for p2 = (evaluate spline (/ i (float count 1f0)) :even-spacing even-spacing)
         :collect (list p1 p2)))
 
 (u:fn-> collect-handle-segments (bezier-curve) list)

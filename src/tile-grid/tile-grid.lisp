@@ -48,11 +48,9 @@
             (:copier nil))
   (width 0 :type u:ub16)
   (height 0 :type u:ub16)
-  (cells (make-array 0 :element-type 'cell)
-   :type (simple-array cell (*))))
+  (cells (make-array 0 :element-type 'cell) :type (simple-array cell (*))))
 
-(defmacro do-cells ((&key (w 'w) (h 'h) (x1 0) (y1 0) (x2 w) (y2 h)) grid cell
-                    &body body)
+(defmacro do-cells ((&key (w 'w) (h 'h) (x1 0) (y1 0) (x2 w) (y2 h)) grid cell &body body)
   (u:with-gensyms (grid-sym x y)
     (destructuring-bind (cell &optional (x x) (y y)) (u:ensure-list cell)
       `(loop :with ,grid-sym = ,grid

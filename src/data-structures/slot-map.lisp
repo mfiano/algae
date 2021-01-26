@@ -132,8 +132,7 @@
             (locally (declare (optimize (speed 1)))
               (setf (aref data slot-id) (vector-pop data)))
             (setf (da:aref reverse-map slot-id) reverse-index
-                  (da:aref slots id) (pack id
-                                           (1+ (version (da:aref slots id)))))
+                  (da:aref slots id) (pack id (1+ (version (da:aref slots id)))))
             (repack-id (da:aref slots reverse-index) slot-id)
             (enqueue-free slot-map key)
             t))))))

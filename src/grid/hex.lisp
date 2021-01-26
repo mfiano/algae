@@ -25,10 +25,11 @@
 (defun hex-round (hex)
   (v3:with-components ((r (v3:round hex))
                        (d (v3:abs (v3:- r hex))))
-    (cond ((and (> dx dy) (> dx dz))
-           (setf rx (- (- ry) rz)))
-          ((> dy dz)
-           (setf ry (- (- rx) rz))))
+    (cond
+      ((and (> dx dy) (> dx dz))
+       (setf rx (- (- ry) rz)))
+      ((> dy dz)
+       (setf ry (- (- rx) rz))))
     r))
 
 (defmethod neighbor-offsets ((grid hex-grid))

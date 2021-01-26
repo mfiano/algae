@@ -18,9 +18,10 @@
 
 (in-package #:algae.uuid)
 
-(defstruct (uuid (:constructor %make-uuid)
-                 (:predicate nil)
-                 (:copier nil))
+(defstruct (uuid
+            (:constructor %make-uuid)
+            (:predicate nil)
+            (:copier nil))
   version
   (variant :rfc-4122)
   (low 0 :type u:ub64)
@@ -36,8 +37,7 @@
                `(setf ,@(loop :for i :below count
                               :collect `(aref ,string ,(+ offset i))
                               :collect `(aref "0123456789ABCDEF"
-                                              (ldb (byte 4 ,(- bits (* i 4)))
-                                                   ,word))))))
+                                              (ldb (byte 4 ,(- bits (* i 4))) ,word))))))
     (let ((high (uuid-high uuid))
           (low (uuid-low uuid))
           (string (make-string 36 :element-type 'base-char)))
@@ -83,8 +83,7 @@
            (if generator-id
                (dpb (rng:uint generator-id 0 (1- (expt 2 32)) nil)
                     (byte 32 32)
-                    (ldb (byte 32 0)
-                         (rng:uint generator-id 0 (1- (expt 2 32)) nil)))
+                    (ldb (byte 32 0) (rng:uint generator-id 0 (1- (expt 2 32)) nil)))
                (random (expt 2 64)))))
     (%make-uuid :version 4
                 :low (dpb 4 (byte 3 61) (%random))

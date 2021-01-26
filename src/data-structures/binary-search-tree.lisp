@@ -71,20 +71,14 @@
           (node-right node) sentinel)
     node))
 
-(u:fn-> make-tree (&key (:item-type symbol)
-                        (:key function)
-                        (:sort function)
-                        (:hash-test function))
+(u:fn-> make-tree (&key (:item-type symbol) (:key function) (:sort function) (:hash-test function))
         tree)
 (defun make-tree (&key item-type (key #'identity) (sort #'<) (hash-test #'eql))
   (declare (optimize speed))
   (unless item-type
     (error "Must specify :ITEM-TYPE denoting the type of items stored in the ~
             tree."))
-  (let* ((tree (%make-tree :item-type item-type
-                           :key key
-                           :sorter sort
-                           :hash-test hash-test))
+  (let* ((tree (%make-tree :item-type item-type :key key :sorter sort :hash-test hash-test))
          (sentinel (make-node tree nil)))
     (setf (tree-sentinel tree) sentinel
           (node-left sentinel) sentinel
@@ -101,10 +95,7 @@
                (declare (function sorter))
                (when (node-p node)
                  (when (or (null (%check (node-left node) sorter))
-                           (and previous
-                                (funcall sorter
-                                         (node-key node)
-                                         (node-key previous))))
+                           (and previous (funcall sorter (node-key node) (node-key previous))))
                    (return-from %check))
                  (setf previous node)
                  (return-from %check

@@ -33,8 +33,7 @@
 (defvar *shapes* (u:dict #'eq))
 
 (defstruct (kernel
-            (:constructor %make-kernel
-                (shape grid x y mapper min-x max-x min-y max-y))
+            (:constructor %make-kernel (shape grid x y mapper min-x max-x min-y max-y))
             (:conc-name nil)
             (:copier nil))
   (shape :rect :type keyword)
@@ -49,11 +48,10 @@
 
 (u:fn-> make-kernel
         (tg:grid keyword &key
-                 (:x u:ub32) (:y u:ub32) (:min-x u:ub32) (:max-x u:ub32)
-                 (:min-y u:ub32) (:max-y u:ub32))
+                 (:x u:ub32) (:y u:ub32) (:min-x u:ub32) (:max-x u:ub32) (:min-y u:ub32)
+                 (:max-y u:ub32))
         kernel)
-(defun make-kernel (grid shape
-                    &key (x 0) (y 0) (min-x 0) (max-x 1) (min-y 0) (max-y 1))
+(defun make-kernel (grid shape &key (x 0) (y 0) (min-x 0) (max-x 1) (min-y 0) (max-y 1))
   (declare (optimize speed))
   (let ((func (u:href *shapes* shape)))
     (declare (function func))
@@ -167,9 +165,7 @@
   (declare (optimize speed))
   (values (funcall (mapper kernel) kernel func)))
 
-(u:fn-> detect (kernel function
-                        &optional (integer 1 #.most-positive-fixnum))
-        boolean)
+(u:fn-> detect (kernel function &optional (integer 1 #.most-positive-fixnum)) boolean)
 (defun detect (kernel func &optional (count 1))
   (declare (optimize speed))
   (let ((i 0))
@@ -210,8 +206,7 @@
     (convolve kernel (lambda (x) (push x items)) test)
     items))
 
-(defun process (kernel processor
-                &key items (test (constantly t)) (generator #'identity))
+(defun process (kernel processor &key items (test (constantly t)) (generator #'identity))
   (declare (optimize speed)
            (function processor test generator))
   (let ((items (or items (find kernel test))))
@@ -233,8 +228,7 @@
         (y kernel) (tg:y cell))
   kernel)
 
-(u:fn-> flood-fill (kernel tg:cell function (simple-array bit (* *)))
-        hash-table)
+(u:fn-> flood-fill (kernel tg:cell function (simple-array bit (* *))) hash-table)
 (defun flood-fill (kernel cell test visited)
   (declare (optimize speed)
            (function test))

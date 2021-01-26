@@ -36,9 +36,7 @@
   (format stream "~a" (subseq (dense sparse-set) 0 (%length sparse-set))))
 
 (defun make-sparse-set (&key (size 128))
-  (%make-sparse-set :dense (make-array size
-                                       :element-type 'fixnum
-                                       :initial-element 0)
+  (%make-sparse-set :dense (make-array size :element-type 'fixnum :initial-element 0)
                     :sparse (make-array size
                                         :element-type 'fixnum
                                         :initial-element most-positive-fixnum)))
