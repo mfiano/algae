@@ -15,6 +15,7 @@
    #:map)
   (:export
    #:align
+   #:collect
    #:convolve
    #:count
    #:detect
@@ -203,13 +204,20 @@
 (defun find (kernel test)
   (declare (optimize speed))
   (let ((items))
+    (map kernel (lambda (x) (when (funcall test x) (push x items))))
+    items))
+
+(u:fn-> collect (kernel function) list)
+(defun collect (kernel test)
+  (declare (optimize speed))
+  (let ((items))
     (convolve kernel (lambda (x) (push x items)) test)
     items))
 
 (defun process (kernel processor &key items (test (constantly t)) (generator #'identity))
   (declare (optimize speed)
            (function processor test generator))
-  (let ((items (or items (find kernel test))))
+  (let ((items (or items (collect kernel test))))
     (u:while items
       (let ((kernel (funcall generator (pop items))))
         (when (funcall test kernel)
