@@ -128,8 +128,8 @@
 
 (define-shape :ellipse ()
   (default-mapper
-   `(<= (+ (/ (expt ,x 2) (expt (/ ,max-x 2) 2f0))
-           (/ (expt ,y 2) (expt (/ ,max-y 2) 2f0)))
+   `(<= (+ (/ (expt ,x 2f0) (expt (/ ,max-x 2) 2f0))
+           (/ (expt ,y 2f0) (expt (/ ,max-y 2) 2f0)))
         1f0)))
 
 (define-shape :+ ()
