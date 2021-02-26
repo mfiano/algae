@@ -6,12 +6,8 @@
   :source-control (:git "https://git.mfiano.net/mfiano/algae")
   :bug-tracker "https://git.mfiano.net/mfiano/algae/issues"
   :encoding :utf-8
-  :depends-on (#:cl-pcg
-               #:ironclad
-               #:global-vars
-               #:golden-utils
-               #:origin
-               #:zpng)
+  :depends-on (#:golden-utils
+               #:origin)
   :pathname "src"
   :serial t
   :components
@@ -43,27 +39,6 @@
      (:file "hex")
      (:file "hex-rows")
      (:file "hex-columns")))
-   (:module "rng"
+   (:module "color"
     :components
-    ((:file "rng")))
-   (:module "uuid"
-    :components
-    ((:file "uuid")))
-   (:module "noise"
-    :components
-    ((:file "common")
-     (:file "open-simplex-2d")
-     (:file "open-simplex-3d")
-     (:file "open-simplex-4d")
-     (:file "perlin-improved-1d")
-     (:file "perlin-improved-2d")
-     (:file "perlin-improved-3d")
-     (:file "perlin-improved-4d")
-     (:file "simplex-1d")
-     (:file "simplex-2d")
-     (:file "simplex-3d")
-     (:file "simplex-4d")
-     (:file "noise")))
-   (:module "spline"
-    :components
-    ((:file "cubic-bezier")))))
+    ((:file "colorspace")))))
