@@ -38,7 +38,4 @@
      (:file "quad-8-way")
      (:file "hex")
      (:file "hex-rows")
-     (:file "hex-columns")))
-   (:module "color"
-    :components
-    ((:file "colorspace")))))
+     (:file "hex-columns")))))
