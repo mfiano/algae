@@ -34,6 +34,6 @@ See individual idea code comments, package definition, examples, etc.
 
 ## License
 
-Copyright © Michael Fiano <mail@mfiano.net>.
+Copyright © 2020-2021 Michael Fiano <mail@mfiano.net>.
 
 Licensed under the MIT License.

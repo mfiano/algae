@@ -8,7 +8,7 @@
 (defpackage #:algae.slot-map
   (:local-nicknames
    (#:da #:algae.dynamic-array)
-   (#:u #:golden-utils))
+   (#:u #:mfiano-utils))
   (:use #:cl)
   (:shadow
    #:delete

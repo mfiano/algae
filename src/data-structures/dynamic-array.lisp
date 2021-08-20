@@ -8,7 +8,7 @@
 
 (defpackage #:algae.dynamic-array
   (:local-nicknames
-   (#:u #:golden-utils))
+   (#:u #:mfiano-utils))
   (:use #:cl)
   (:shadow
    #:aref

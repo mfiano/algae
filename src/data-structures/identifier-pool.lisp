@@ -27,7 +27,7 @@
 (defpackage #:algae.identifier-pool
   (:local-nicknames
    (#:da #:algae.dynamic-array)
-   (#:u #:golden-utils))
+   (#:u #:mfiano-utils))
   (:use #:cl)
   (:shadow
    #:count

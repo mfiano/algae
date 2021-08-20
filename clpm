@@ -1,0 +1,10 @@
+;;; -*- Mode: common-lisp; -*-
+
+(:api-version "0.3")
+
+(:source "quicklisp" :url "https://beta.quicklisp.org/dist/quicklisp.txt" :type :quicklisp)
+
+(:asd "algae.asd")
+
+(:github "mfiano-utils" :path "mfiano/mfiano-utils" :branch "master")
+(:github "origin" :path "mfiano/origin" :branch "master")

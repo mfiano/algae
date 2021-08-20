@@ -2,9 +2,10 @@
   :description "Assortment of Lisp Game Algorithms and Experiments"
   :author ("Michael Fiano <mail@mfiano.net>")
   :license "MIT"
-  :homepage "https://git.mfiano.net/mfiano/algae"
+  :homepage "https://github.com/mfiano/algae"
+  :version "0.1.0"
   :encoding :utf-8
-  :depends-on (#:golden-utils
+  :depends-on (#:mfiano-utils
                #:origin)
   :pathname "src"
   :serial t

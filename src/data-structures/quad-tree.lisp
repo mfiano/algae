@@ -4,7 +4,7 @@
 
 (defpackage #:algae.quad-tree
   (:local-nicknames
-   (#:u #:golden-utils)
+   (#:u #:mfiano-utils)
    (#:v2 #:origin.vec2))
   (:use #:cl)
   (:export

@@ -7,7 +7,7 @@
 (defpackage #:algae.convolution-kernel
   (:local-nicknames
    (#:tg #:algae.tile-grid)
-   (#:u #:golden-utils))
+   (#:u #:mfiano-utils))
   (:use #:cl)
   (:shadow
    #:count
